@@ -1,4 +1,4 @@
---freeRoam (CLIENT) by Dudekahedron, 2024
+--freeRoamMP (CLIENT) by Dudekahedron, 2024
 
 local M = {}
 

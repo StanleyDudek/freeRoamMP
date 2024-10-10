@@ -1,3 +1,4 @@
+--freeRoamMP (SERVER) by Dudekahedron, 2024
 
 local vehicleStates = {}
 local loadedPrefabs = {}

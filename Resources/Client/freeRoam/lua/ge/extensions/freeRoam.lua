@@ -118,90 +118,284 @@ end
 
 local function rxPrefabSync(data)
 	if data ~= "null" or data ~= nil then
-		local prefab = jsonDecode(data)
-		local userSettings = prefab.pSettings
+		local prefabData = jsonDecode(data)
+		local userSettings = prefabData.pSettings
 		local main
 		local deco
 		local obstacles
+		local obstacles2
+		local obstaclesfromFile
 		local forward
 		local reverse
-		if prefab.pLoad == true then
-			if prefab.pPath then
-				main = prefab.pPath .. '/mainPrefab.prefab.json'
-				deco = prefab.pPath .. '/deco.prefab.json'
-				obstacles = prefab.pPath .. '/obstacles.prefab.json'
-				forward = prefab.pPath .. '/forwardPrefab.prefab.json'
-				reverse = prefab.pPath .. '/reversePrefab.prefab.json'
-			end
-			if not FS:fileExists(deco) then
-				deco = nil
-			end
-			if not FS:fileExists(obstacles) then
-				obstacles = nil
+		local arrive
+		local ramp
+		local p_drag_strip
+		local p_drag_strip_l
+		local p_drag_strip_r
+		local prefab
+		local screenFencesPrefab
+		local road
+		local vehicles
+		if prefabData.pLoad == true then
+			if prefabData.pPath then
+				main = prefabData.pPath .. '/mainPrefab.prefab.json'
+				deco = prefabData.pPath .. '/deco.prefab.json'
+				obstacles = prefabData.pPath .. '/obstacles.prefab.json'
+				obstacles2 = prefabData.pPath .. '/obstacles2.prefab.json'
+				obstaclesfromFile = prefabData.pPath .. '/obstacles-fromFile.prefab.json'
+				forward = prefabData.pPath .. '/forwardPrefab.prefab.json'
+				reverse = prefabData.pPath .. '/reversePrefab.prefab.json'
+				arrive = prefabData.pPath .. '/arrive.prefab.json'
+				ramp = prefabData.pPath .. '/ramp.prefab.json'
+				p_drag_strip = prefabData.pPath .. '/p_drag_strip.prefab.json'
+				p_drag_strip_l = prefabData.pPath .. '/p_drag_strip_l.prefab.json'
+				p_drag_strip_r = prefabData.pPath .. '/p_drag_strip_r.prefab.json'
+				prefab = prefabData.pPath .. '/prefab.prefab.json'
+				screenFencesPrefab = prefabData.pPath .. '/screenFencesPrefab.prefab.json'
+				road = prefabData.pPath .. '/road.prefab.json'
+				vehicles = prefabData.pPath .. '/vehicles.prefab.json'
 			end
 			if not FS:fileExists(main) then
-				main = nil
-				deco = prefab.pPath .. '/deco.prefab'
-				obstacles = prefab.pPath .. '/obstacles.prefab'
-				if deco and FS:fileExists(deco) then
-					prefabsTable[prefab.pName .. "deco"] = {}
-					prefabsTable[prefab.pName .. "deco"].path = deco
-					prefabsTable[prefab.pName .. "deco"].outdated = true
+				main = prefabData.pPath .. '/mainPrefab.prefab'
+				if FS:fileExists(main) then
+					prefabsTable[prefabData.pName .. "main"] = { path = main, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated main prefab found!')
+				else
+					main = nil
 				end
-				if obstacles and FS:fileExists(obstacles) then
-					prefabsTable[prefab.pName .. "obstacles"] = {}
-					prefabsTable[prefab.pName .. "obstacles"].path = obstacles
-					prefabsTable[prefab.pName .. "obstacles"].outdated = true
+			else
+				prefabsTable[prefabData.pName .. "main"] = { path = main, outdated = false }
+				log('W', 'freeRoamMP', 'Main prefab found!')
+			end
+			if not FS:fileExists(deco) then
+				deco = prefabData.pPath .. '/deco.prefab'
+				if FS:fileExists(deco) then
+					prefabsTable[prefabData.pName .. "deco"] = { path = deco, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated deco prefab found!')
+				else
+					deco = nil
 				end
-				return
+			else
+				prefabsTable[prefabData.pName .. "deco"] = { path = deco, outdated = false }
+				log('W', 'freeRoamMP', 'Deco prefab found!')
+			end
+			if not FS:fileExists(obstacles) then
+				obstacles = prefabData.pPath .. '/obstacles.prefab'
+				if FS:fileExists(obstacles) then
+					prefabsTable[prefabData.pName .. "obstacles"] = { path = obstacles, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated obstacles prefab found!')
+				else
+					obstacles = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "obstacles"] = { path = obstacles, outdated = false }
+				log('W', 'freeRoamMP', 'Obstacles prefab found!')
+			end
+			if not FS:fileExists(obstacles2) then
+				obstacles2 = prefabData.pPath .. '/obstacles2.prefab'
+				if FS:fileExists(obstacles2) then
+					prefabsTable[prefabData.pName .. "obstacles2"] = { path = obstacles2, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated obstacles2 prefab found!')
+				else
+					obstacles2 = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "obstacles2"] = { path = obstacles2, outdated = false }
+				log('W', 'freeRoamMP', 'Obstacles2 prefab found!')
+			end
+			if not FS:fileExists(obstaclesfromFile) then
+				obstaclesfromFile = prefabData.pPath .. '/obstaclesfromFile.prefab'
+				if FS:fileExists(obstaclesfromFile) then
+					prefabsTable[prefabData.pName .. "obstaclesfromFile"] = { path = obstaclesfromFile, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated obstaclesfromFile prefab found!')
+				else
+					obstaclesfromFile = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "obstacles2"] = { path = obstacles2, outdated = false }
+				log('W', 'freeRoamMP', 'Obstacles2 prefab found!')
 			end
 			if not FS:fileExists(forward) then
-				forward = nil
+				forward = prefabData.pPath .. '/forwardPrefab.prefab'
+				if FS:fileExists(forward) and not userSettings.reverse then
+					prefabsTable[prefabData.pName .. "forward"] = { path = forward, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated forward prefab found!')
+				else
+					forward = nil
+				end
+			elseif not userSettings.reverse then
+				prefabsTable[prefabData.pName .. "forward"] = { path = forward, outdated = false }
+				log('W', 'freeRoamMP', 'Forward prefab found!')
 			end
 			if not FS:fileExists(reverse) then
-				reverse = nil
+				reverse = prefabData.pPath .. '/reversePrefab.prefab'
+				if FS:fileExists(reverse) and userSettings.reverse then
+					prefabsTable[prefabData.pName .. "reverse"] = { path = reverse, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated reverse prefab found!')
+				else
+					reverse = nil
+				end
+			elseif userSettings.reverse then
+				prefabsTable[prefabData.pName .. "reverse"] = { path = reverse, outdated = false }
+				log('W', 'freeRoamMP', 'Reverse prefab found!')
 			end
-			if deco then
-				prefabsTable[prefab.pName .. "deco"] = {}
-				prefabsTable[prefab.pName .. "deco"].path = deco
-				prefabsTable[prefab.pName .. "deco"].outdated = false
+			if not FS:fileExists(arrive) then
+				arrive = prefabData.pPath .. '/arrive.prefab'
+				if FS:fileExists(arrive) then
+					prefabsTable[prefabData.pName .. "arrive"] = { path = arrive, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated arrive prefab found!')
+				else
+					arrive = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "arrive"] = { path = arrive, outdated = false }
+				log('W', 'freeRoamMP', 'Arrive prefab found!')
 			end
-			if main then
-				prefabsTable[prefab.pName .. "main"] = {}
-				prefabsTable[prefab.pName .. "main"].path = main
-				prefabsTable[prefab.pName .. "main"].outdated = false
+			if not FS:fileExists(ramp) then
+				ramp = prefabData.pPath .. '/ramp.prefab'
+				if FS:fileExists(ramp) then
+					prefabsTable[prefabData.pName .. "ramp"] = { path = ramp, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated ramp prefab found!')
+				else
+					ramp = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "ramp"] = { path = ramp, outdated = false }
+				log('W', 'freeRoamMP', 'Ramp prefab found!')
 			end
-			if obstacles then
-				prefabsTable[prefab.pName .. "obstacles"] = {}
-				prefabsTable[prefab.pName .. "obstacles"].path = obstacles
-				prefabsTable[prefab.pName .. "obstacles"].outdated = false
+			if not FS:fileExists(p_drag_strip) then
+				p_drag_strip = prefabData.pPath .. '/p_drag_strip.prefab'
+				if FS:fileExists(p_drag_strip) then
+					prefabsTable[prefabData.pName .. "p_drag_strip"] = { path = p_drag_strip, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated p_drag_strip prefab found!')
+				else
+					p_drag_strip = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "p_drag_strip"] = { path = p_drag_strip, outdated = false }
+				log('W', 'freeRoamMP', 'P_drag_strip prefab found!')
 			end
-			if forward and not userSettings.reverse then
-				prefabsTable[prefab.pName .. "forward"] = {}
-				prefabsTable[prefab.pName .. "forward"].path = forward
-				prefabsTable[prefab.pName .. "forward"].outdated = false
+			if not FS:fileExists(p_drag_strip_l) then
+				p_drag_strip_l = prefabData.pPath .. '/p_drag_strip_l.prefab'
+				if FS:fileExists(p_drag_strip_l) then
+					prefabsTable[prefabData.pName .. "p_drag_strip_l"] = { path = p_drag_strip_l, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated p_drag_strip_l prefab found!')
+				else
+					p_drag_strip_l = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "p_drag_strip_l"] = { path = p_drag_strip_l, outdated = false }
+				log('W', 'freeRoamMP', 'P_drag_strip_l prefab found!')
 			end
-			if reverse and userSettings.reverse then
-				prefabsTable[prefab.pName .. "reverse"] = {}
-				prefabsTable[prefab.pName .. "reverse"].path = reverse
-				prefabsTable[prefab.pName .. "reverse"].outdated = false
+			if not FS:fileExists(p_drag_strip_r) then
+				p_drag_strip_r = prefabData.pPath .. '/p_drag_strip_r.prefab'
+				if FS:fileExists(p_drag_strip_r) then
+					prefabsTable[prefabData.pName .. "p_drag_strip_r"] = { path = p_drag_strip_r, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated p_drag_strip_r prefab found!')
+				else
+					p_drag_strip_r = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "p_drag_strip_r"] = { path = p_drag_strip_r, outdated = false }
+				log('W', 'freeRoamMP', 'P_drag_strip_r prefab found!')
 			end
-		elseif prefab.pLoad == false then
-			removePrefab(prefab.pName)
-			if scenetree.findObject(prefab.pName .. "main") then
-				removePrefab(prefab.pName .. "main")
+			if not FS:fileExists(prefab) then
+				prefab = prefabData.pPath .. '/prefab.prefab'
+				if FS:fileExists(prefab) then
+					prefabsTable[prefabData.pName .. "prefab"] = { path = prefab, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated prefab found!')
+				else
+					prefab = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "prefab"] = { path = prefab, outdated = false }
+				log('W', 'freeRoamMP', 'Prefab found!')
 			end
-			if scenetree.findObject(prefab.pName .. "deco") then
-				removePrefab(prefab.pName .. "deco")
+			if not FS:fileExists(screenFencesPrefab) then
+				screenFencesPrefab = prefabData.pPath .. '/screenFencesPrefab.prefab'
+				if FS:fileExists(screenFencesPrefab) then
+					prefabsTable[prefabData.pName .. "screenFencesPrefab"] = { path = screenFencesPrefab, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated screenFencesPrefab found!')
+				else
+					screenFencesPrefab = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "screenFencesPrefab"] = { path = screenFencesPrefab, outdated = false }
+				log('W', 'freeRoamMP', 'ScreenFencesPrefab found!')
 			end
-			if scenetree.findObject(prefab.pName .. "obstacles") then
-				removePrefab(prefab.pName .. "obstacles")
+			if not FS:fileExists(road) then
+				road = prefabData.pPath .. '/road.prefab'
+				if FS:fileExists(road) then
+					prefabsTable[prefabData.pName .. "road"] = { path = road, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated road prefab found!')
+				else
+					road = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "road"] = { path = road, outdated = false }
+				log('W', 'freeRoamMP', 'Road prefab found!')
 			end
-			if scenetree.findObject(prefab.pName .. "forward") then
-				removePrefab(prefab.pName .. "forward")
+			if not FS:fileExists(vehicles) then
+				vehicles = prefabData.pPath .. '/vehicles.prefab'
+				if FS:fileExists(vehicles) then
+					prefabsTable[prefabData.pName .. "vehicles"] = { path = vehicles, outdated = true }
+					log('W', 'freeRoamMP', 'Outdated vehicles prefab found!')
+				else
+					vehicles = nil
+				end
+			else
+				prefabsTable[prefabData.pName .. "vehicles"] = { path = vehicles, outdated = false }
+				log('W', 'freeRoamMP', 'Vehicles prefab found!')
 			end
-			if scenetree.findObject(prefab.pName .. "reverse") then
-				removePrefab(prefab.pName .. "reverse")
+		elseif prefabData.pLoad == false then
+			removePrefab(prefabData.pName)
+			if scenetree.findObject(prefabData.pName .. "main") then
+				removePrefab(prefabData.pName .. "main")
+			end
+			if scenetree.findObject(prefabData.pName .. "deco") then
+				removePrefab(prefabData.pName .. "deco")
+			end
+			if scenetree.findObject(prefabData.pName .. "obstacles") then
+				removePrefab(prefabData.pName .. "obstacles")
+			end
+			if scenetree.findObject(prefabData.pName .. "obstacles2") then
+				removePrefab(prefabData.pName .. "obstacles2")
+			end
+			if scenetree.findObject(prefabData.pName .. "obstaclesfromFile") then
+				removePrefab(prefabData.pName .. "obstaclesfromFile")
+			end
+			if scenetree.findObject(prefabData.pName .. "forward") then
+				removePrefab(prefabData.pName .. "forward")
+			end
+			if scenetree.findObject(prefabData.pName .. "reverse") then
+				removePrefab(prefabData.pName .. "reverse")
+			end
+			if scenetree.findObject(prefabData.pName .. "arrive") then
+				removePrefab(prefabData.pName .. "arrive")
+			end
+			if scenetree.findObject(prefabData.pName .. "ramp") then
+				removePrefab(prefabData.pName .. "ramp")
+			end
+			if scenetree.findObject(prefabData.pName .. "p_drag_strip") then
+				removePrefab(prefabData.pName .. "p_drag_strip")
+			end
+			if scenetree.findObject(prefabData.pName .. "p_drag_strip_l") then
+				removePrefab(prefabData.pName .. "p_drag_strip_l")
+			end
+			if scenetree.findObject(prefabData.pName .. "p_drag_strip_r") then
+				removePrefab(prefabData.pName .. "p_drag_strip_r")
+			end
+			if scenetree.findObject(prefabData.pName .. "prefab") then
+				removePrefab(prefabData.pName .. "prefab")
+			end
+			if scenetree.findObject(prefabData.pName .. "screenFencesPrefab") then
+				removePrefab(prefabData.pName .. "screenFencesPrefab")
+			end
+			if scenetree.findObject(prefabData.pName .. "road") then
+				removePrefab(prefabData.pName .. "road")
+			end
+			if scenetree.findObject(prefabData.pName .. "vehicles") then
+				removePrefab(prefabData.pName .. "vehicles")
 			end
 			be:reloadCollision()
 		end
@@ -277,11 +471,11 @@ local function onExtensionLoaded()
 	AddEventHandler("rxPrefabSync", rxPrefabSync)
 	AddEventHandler("rxFreeRoamSync", rxFreeRoamSync)
 	AddEventHandler("rxFreeRoamVehicleActive", rxFreeRoamVehicleActive)
-	log('W', 'freeRoam', 'freeRoam LOADED!')
+	log('W', 'freeRoamMP', 'freeRoamMP LOADED!')
 end
 
 local function onExtensionUnloaded()
-	log('W', 'freeRoam', 'freeRoam UNLOADED!')
+	log('W', 'freeRoamMP', 'freeRoamMP UNLOADED!')
 end
 
 M.onUpdate = onUpdate

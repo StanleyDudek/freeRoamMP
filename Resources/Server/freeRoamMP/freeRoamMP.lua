@@ -1,4 +1,4 @@
---freeRoamMP (SERVER) by Dudekahedron, 2024
+--freeRoamMP (SERVER) by Dudekahedron, 2025
 
 local vehicleStates = {}
 local loadedPrefabs = {}
@@ -11,6 +11,7 @@ function onInit()
 	MP.RegisterEvent("onPlayerJoin","onPlayerJoinHandler")
 	MP.RegisterEvent("onVehicleSpawn","onVehicleSpawnHandler")
 	MP.RegisterEvent("onVehicleEdited","onVehicleEditedHandler")
+	MP.RegisterEvent("onVehicleDeleted","onVehicleDeletedHandler")
 	MP.RegisterEvent("onPlayerDisconnect","onPlayerDisconnectHandler")
 	print("[freeRoam] ---------- freeRoam Loaded!")
 end
@@ -74,6 +75,23 @@ function onVehicleEditedHandler(player_id, vehicle_id,  data)
 	else
 		vehicleStates[player_id .. "-" .. vehicle_id] = {}
 		vehicleStates[player_id .. "-" .. vehicle_id].active = true
+	end
+end
+
+function onVehicleEditedHandler(player_id, vehicle_id,  data)
+	if vehicleStates[player_id .. "-" .. vehicle_id] then
+		vehicleStates[player_id .. "-" .. vehicle_id].active = true
+	else
+		vehicleStates[player_id .. "-" .. vehicle_id] = {}
+		vehicleStates[player_id .. "-" .. vehicle_id].active = true
+	end
+end
+
+function onVehicleDeletedHandler(player_id, vehicle_id)
+	for id in pairs(vehicleStates) do
+		if string.find(id, player_id .. "-" .. vehicle_id) then
+			vehicleStates[id] = nil
+		end
 	end
 end
 

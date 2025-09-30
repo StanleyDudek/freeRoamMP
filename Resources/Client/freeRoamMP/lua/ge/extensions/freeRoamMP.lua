@@ -97,24 +97,44 @@ local hiddens = {
 
 
 local function handlePrefabsA(path, name)
-	local f = io.open(path, "r")
-	if f == nil then
+	local line_count = 0
+	local count = io.open(path, "r")
+	if count == nil then
 		return
 	end
-	local originalContent = f:read("*all")
-	f:close()
+	for line in count:lines() do
+		line_count = line_count + 1
+	end
+	count:close()
+	local file = io.open(path, "r")
+	if file == nil then
+		return
+	end
+	local originalContent = file:read("*all")
+	file:close()
 	local tempStringB = ""
-	local sepA, sepB = 1, 1
-	for i = 1, #originalContent do
-		sepA = originalContent:find("{", sepB)
-		sepB = originalContent:find("}", sepA)
-		if not sepA or not sepB then
-			break
-		end
-		local tempStringA = originalContent:sub(sepA, sepB)
-		local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
-		if not matchA then
-			tempStringB = tempStringB .. tempStringA .. "\n"
+	local sepA = 1
+	local sepB = 1
+	local sepC = 1
+	for i = 1, line_count do
+		sepB = originalContent:find("%]}", sepA)
+		if not sepB then
+			sepC = originalContent:find("}", sepA)
+			if sepC then
+				local tempStringA = originalContent:sub(sepA, sepC)
+				sepA = originalContent:find("{", sepC)
+				local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
+				if not matchA then
+					tempStringB = tempStringB .. tempStringA .. "\n"
+				end
+			end
+		else
+			local tempStringA = originalContent:sub(sepA, sepB + 1)
+			sepA = originalContent:find("{", sepB)
+			local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
+			if not matchA then
+				tempStringB = tempStringB .. tempStringA
+			end
 		end
 	end
 	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab.json"

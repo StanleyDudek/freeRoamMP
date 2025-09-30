@@ -2,6 +2,8 @@
 
 local M = {}
 
+local originalSimplifiedTrafficValue = true
+
 local freeRoam = false
 local syncRequested = false
 
@@ -562,12 +564,19 @@ local function onVehicleReady(gameVehicleID)
 end
 
 local function onExtensionLoaded()
+	if not settings.getValue("trafficSimpleVehicles") then
+		originalSimplifiedTrafficValue = false
+		settings.setValue("trafficSimpleVehicles", true)
+	end
 	AddEventHandler("rxPrefabSync", rxPrefabSync)
 	AddEventHandler("rxFreeRoamVehSync", rxFreeRoamVehSync)
 	log('W', 'freeRoamMP', 'freeRoamMP LOADED!')
 end
 
 local function onExtensionUnloaded()
+	if originalSimplifiedTrafficValue == false then
+		settings.setValue("trafficSimpleVehicles", originalSimplifiedTrafficValue)
+	end
 	log('W', 'freeRoamMP', 'freeRoamMP UNLOADED!')
 end
 

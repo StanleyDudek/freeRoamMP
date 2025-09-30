@@ -551,6 +551,11 @@ local function onVehicleActiveChanged(gameVehicleID, active)
 				data.serverVehicleID = serverVehicleID
 				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
 			end
+		else
+			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+			if serverVehicleID then
+				TriggerServerEvent("freeRoamVehSyncRequested", "")
+			end
 		end
 	end
 end

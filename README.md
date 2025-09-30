@@ -1,5 +1,5 @@
 # freeRoamMP
-A BeamMP `Client mod <=> Server plugin` pair enabling a stock freeeroam gamemode on your BeamMP server!
+A BeamMP `Client mod <=> Server plugin` pair enabling a stock freeroam gamemode on your BeamMP server!
 
 ## Missions and scenarios including
 - delivery

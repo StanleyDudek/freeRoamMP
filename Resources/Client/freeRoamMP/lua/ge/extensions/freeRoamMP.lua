@@ -2,6 +2,8 @@
 
 local M = {}
 
+local originalSimplifiedTrafficValue = true
+
 local freeRoam = false
 local syncRequested = false
 
@@ -9,6 +11,90 @@ local prefabsTable = {}
 
 local iterT = {}
 local iterC = 0
+
+local hiddens = {
+	anticut = "anticut",
+	ball = "ball",
+	barrels = "barrels",
+	barrier = "barrier",
+	barrier_plastic = "barrier_plastic",
+	blockwall = "blockwall",
+	bollard = "bollard",
+	boxutility = "boxutility",
+	boxutility_large = "boxutility_large",
+	cannon = "cannon",
+	caravan = "caravan",
+	cardboard_box = "cardboard_box",
+	cargotrailer = "cargotrailer",
+	chair = "chair",
+	christmas_tree = "christmas_tree",
+	cones = "cones",
+	containerTrailer = "containerTrailer",
+	couch = "couch",
+	crowdbarrier = "crowdbarrier",
+	delineator = "delineator",
+	dolly = "dolly",
+	dryvan = "dryvan",
+	engine_props = "engine_props",
+	flail = "flail",
+	flatbed = "flatbed",
+	flipramp = "flipramp",
+	frameless_dump = "frameless_dump",
+	fridge = "fridge",
+	gate = "gate",
+	haybale = "haybale",
+	inflated_mat = "inflated_mat",
+	kickplate = "kickplate",
+	large_angletester = "large_angletester",
+	large_bridge = "large_bridge",
+	large_cannon = "large_cannon",
+	large_crusher = "large_crusher",
+	large_hamster_wheel = "large_hamster_wheel",
+	large_roller = "large_roller",
+	large_spinner = "large_spinner",
+	large_tilt = "large_tilt",
+	large_tire = "large_tire",
+	log_trailer = "log_trailer",
+	logs = "logs",
+	mattress = "mattress",
+	metal_box = "metal_box",
+	metal_ramp = "metal_ramp",
+	piano = "piano",
+	porta_potty = "porta_potty",
+	pressure_ball = "pressure_ball",
+	rallyflags = "rallyflags",
+	rallysigns = "rallysigns",
+	rallytape = "rallytape",
+	roadsigns = "roadsigns",
+	rocks = "rocks",
+	rollover = "rollover",
+	roof_crush_tester = "roof_crush_tester",
+	sawhorse = "sawhorse",
+	shipping_container = "shipping_container",
+	simple_traffic = "simple_traffic",
+	spikestrip = "spikestrip",
+	steel_coil = "steel_coil",
+	streetlight = "streetlight",
+	suspensionbridge = "suspensionbridge",
+	tanker = "tanker",
+	testroller = "testroller",
+	tiltdeck = "tiltdeck",
+	tirestacks = "tirestacks",
+	tirewall = "tirewall",
+	trafficbarrel = "trafficbarrel",
+	trampoline = "trampoline",
+	trashbin = "trashbin",
+	tsfb = "tsfb",
+	tub = "tub",
+	tube = "tube",
+	tv = "tv",
+	wall = "wall",
+	weightpad = "weightpad",
+	woodcrate = "woodcrate",
+	woodplanks = "woodplanks",
+}
+
+
 
 local function handlePrefabsA(path, name)
 	local f = io.open(path, "r")
@@ -98,20 +184,24 @@ local function onUpdate(dt)
 	end
 end
 
-local function rxFreeRoamSync(data)
+local function rxFreeRoamVehSync(data)
 	if data ~= "null" then
 		local vehicleStates = jsonDecode(data)
 		local vehicles = MPVehicleGE.getVehicles()
-		for serverVid, state in pairs(vehicleStates) do
-			if serverVid then
-				if vehicles[serverVid] then
-					local gameVid = vehicles[serverVid].gameVehicleID
-					if gameVid ~= -1 then
-						if not MPVehicleGE.isOwn(gameVid) then
-							if not state.active then
-								be:getObjectByID(gameVid):setActive(0)
+		for serverVehicleID, state in pairs(vehicleStates) do
+			if vehicles[serverVehicleID] then
+				local gameVehicleID = vehicles[serverVehicleID].gameVehicleID
+				if gameVehicleID ~= -1 then
+					if not MPVehicleGE.isOwn(gameVehicleID) then
+						if not state.active then
+							be:getObjectByID(gameVehicleID):setActive(0)
+							vehicles[serverVehicleID].hideNametag = true
+						else
+							be:getObjectByID(gameVehicleID):setActive(1)
+							if hiddens[vehicles[serverVehicleID].jbeam] then
+								vehicles[serverVehicleID].hideNametag = true
 							else
-								be:getObjectByID(gameVid):setActive(1)
+								vehicles[serverVehicleID].hideNametag = false
 							end
 						end
 					end
@@ -407,29 +497,6 @@ local function rxPrefabSync(data)
 	end
 end
 
-local function rxFreeRoamVehicleActive(data)
-	if data ~= "null" or data ~= nil then
-		local tempData = jsonDecode(data)
-		local active = tempData[1]
-		local serverVid = tempData[2]
-		local vehicles = MPVehicleGE.getVehicles()
-		if serverVid then
-			if vehicles[serverVid] then
-				local gameVid = vehicles[serverVid].gameVehicleID
-				if gameVid ~= -1 then
-					if not MPVehicleGE.isOwn(gameVid) then
-						if not active then
-							be:getObjectByID(gameVid):setActive(0)
-						else
-							be:getObjectByID(gameVid):setActive(1)
-						end
-					end
-				end
-			end
-		end
-	end
-end
-
 local function onAnyMissionChanged(state, mission)
 	if state == "stopped" then
 		local prefab = {}
@@ -454,35 +521,62 @@ local function onMissionStartWithFade(mission, userSettings)
 	iterC = iterC + 1
 end
 
-local function onVehicleActiveChanged(gameVid, active)
-	if gameVid then
-		if MPVehicleGE.isOwn(gameVid) then
-			local serverVid = MPVehicleGE.getServerVehicleID(gameVid)
-			if serverVid then
-				local data = jsonEncode( { active, serverVid } )
-				TriggerServerEvent("freeRoamVehicleActiveHandler", data)
+local function onVehicleActiveChanged(gameVehicleID, active)
+	if gameVehicleID then
+		if MPVehicleGE.isOwn(gameVehicleID) then
+			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+			if serverVehicleID then
+				local data = {}
+				data.active = active
+				data.serverVehicleID = serverVehicleID
+				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
 			end
-		else
-			TriggerServerEvent("freeRoamVehSyncRequested", "")
 		end
 	end
 end
 
 local function onVehicleSpawned(gameVehicleID)
-	local veh = be:getObjectByID(gameVehicleID)
-	if veh then
-		veh:setField('renderDistance', '', 6969)
+	if gameVehicleID then
+		if not MPVehicleGE.isOwn(gameVehicleID) then
+			TriggerServerEvent("freeRoamVehSyncRequested", "")
+		end
+		local veh = be:getObjectByID(gameVehicleID)
+		if veh then
+			veh:setField('renderDistance', '', 6969)
+			veh:queueLuaCommand('freeRoamMP.onVehicleReady()')
+		end
+	end
+end
+
+local function onVehicleReady(gameVehicleID)
+	local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+	if serverVehicleID then
+		if not MPVehicleGE.isOwn(gameVehicleID) then
+			local vehicles = MPVehicleGE.getVehicles()
+			local veh = be:getObjectByID(gameVehicleID)
+			if hiddens[veh.JBeam] then
+				vehicles[serverVehicleID].hideNametag = true
+			else
+				vehicles[serverVehicleID].hideNametag = false
+			end
+		end
 	end
 end
 
 local function onExtensionLoaded()
+	if not settings.getValue("trafficSimpleVehicles") then
+		originalSimplifiedTrafficValue = false
+		settings.setValue("trafficSimpleVehicles", true)
+	end
 	AddEventHandler("rxPrefabSync", rxPrefabSync)
-	AddEventHandler("rxFreeRoamSync", rxFreeRoamSync)
-	AddEventHandler("rxFreeRoamVehicleActive", rxFreeRoamVehicleActive)
+	AddEventHandler("rxFreeRoamVehSync", rxFreeRoamVehSync)
 	log('W', 'freeRoamMP', 'freeRoamMP LOADED!')
 end
 
 local function onExtensionUnloaded()
+	if originalSimplifiedTrafficValue == false then
+		settings.setValue("trafficSimpleVehicles", originalSimplifiedTrafficValue)
+	end
 	log('W', 'freeRoamMP', 'freeRoamMP UNLOADED!')
 end
 
@@ -493,10 +587,11 @@ M.onMissionStartWithFade = onMissionStartWithFade
 
 M.onVehicleActiveChanged = onVehicleActiveChanged
 M.onVehicleSpawned = onVehicleSpawned
-
-M.onInit = function() setExtensionUnloadMode(M, 'manual') end
+M.onVehicleReady = onVehicleReady
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
+
+M.onInit = function() setExtensionUnloadMode(M, 'manual') end
 
 return M

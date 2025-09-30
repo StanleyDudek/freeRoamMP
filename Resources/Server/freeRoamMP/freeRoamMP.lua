@@ -17,7 +17,7 @@ function onInit()
 end
 
 function freeRoamVehSyncRequested(player_id)
-	MP.TriggerClientEventJson(player_id, "rxFreeRoamSync", vehicleStates)
+	MP.TriggerClientEventJson(player_id, "rxFreeRoamVehSync", vehicleStates)
 end
 
 function freeRoamPrefabSync(player_id, data)
@@ -39,7 +39,7 @@ function freeRoamSyncRequested(player_id)
 		if player_id ~= id then
 			if loadedPrefabs[id] then
 				for k,v in pairs(loadedPrefabs[id]) do
-					MP.TriggerClientEvent(player_id, "rxPrefabSync", k)
+					MP.TriggerClientEventJson(player_id, "rxPrefabSync", loadedPrefabs[id][k])
 				end
 			end
         end
@@ -47,35 +47,24 @@ function freeRoamSyncRequested(player_id)
 end
 
 function freeRoamVehicleActiveHandler(player_id, data)
-	local tempData = Util.JsonDecode(data)
-	if string.find(tempData[2], "-") then
-		if vehicleStates[tempData[2]] then
-			vehicleStates[tempData[2]].active = tempData[1]
-		else
-			vehicleStates[tempData[2]] = {}
-			vehicleStates[tempData[2]].active = tempData[1]
-		end
-		MP.TriggerClientEventJson(-1, "rxFreeRoamSync", vehicleStates)
+	local vehicleData = Util.JsonDecode(data)
+	if vehicleStates[vehicleData.serverVehicleID] then
+		vehicleStates[vehicleData.serverVehicleID].active = vehicleData.active
+	else
+		vehicleStates[vehicleData.serverVehicleID] = {}
+		vehicleStates[vehicleData.serverVehicleID].active = vehicleData.active
 	end
+	MP.TriggerClientEventJson(-1, "rxFreeRoamVehSync", vehicleStates)
 end
 
 function onPlayerJoinHandler(player_id)
     loadedPrefabs[player_id] = {}
-	freeRoamVehSyncRequested(player_id)
 end
 
 function onVehicleSpawnHandler(player_id, vehicle_id,  data)
 	vehicleStates[player_id .. "-" .. vehicle_id] = {}
 	vehicleStates[player_id .. "-" .. vehicle_id].active = true
-end
-
-function onVehicleEditedHandler(player_id, vehicle_id,  data)
-	if vehicleStates[player_id .. "-" .. vehicle_id] then
-		vehicleStates[player_id .. "-" .. vehicle_id].active = true
-	else
-		vehicleStates[player_id .. "-" .. vehicle_id] = {}
-		vehicleStates[player_id .. "-" .. vehicle_id].active = true
-	end
+	MP.TriggerClientEventJson(-1, "rxFreeRoamVehSync", vehicleStates)
 end
 
 function onVehicleEditedHandler(player_id, vehicle_id,  data)
@@ -88,17 +77,11 @@ function onVehicleEditedHandler(player_id, vehicle_id,  data)
 end
 
 function onVehicleDeletedHandler(player_id, vehicle_id)
-	for id in pairs(vehicleStates) do
-		if string.find(id, player_id .. "-" .. vehicle_id) then
-			vehicleStates[id] = nil
-		end
+	if vehicleStates[player_id .. "-" .. vehicle_id] then
+		vehicleStates[player_id .. "-" .. vehicle_id] = nil
 	end
 end
 
 function onPlayerDisconnectHandler(player_id)
-	for id in pairs(vehicleStates) do
-		if string.find(id, player_id .. "-") then
-			vehicleStates[id] = nil
-		end
-	end
+	loadedPrefabs[player_id] = nil
 end

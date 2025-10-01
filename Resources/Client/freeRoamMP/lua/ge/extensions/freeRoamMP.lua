@@ -133,8 +133,11 @@ local function handlePrefabsA(path, name)
 			sepA = originalContent:find("{", sepB)
 			local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
 			if not matchA then
-				tempStringB = tempStringB .. tempStringA
+				tempStringB = tempStringB .. tempStringA .. "\n"
 			end
+		end
+		if not sepA then
+			break
 		end
 	end
 	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab.json"
@@ -524,7 +527,6 @@ local function onAnyMissionChanged(state, mission)
 		prefab.pLoad = false
 		local data = jsonEncode(prefab)
 		TriggerServerEvent("freeRoamPrefabSync", data)
-		ui_fadeScreen.stop()
 		core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
 	end
 end

@@ -119,7 +119,7 @@ local function handlePrefabsA(path, name)
 	for i = 1, line_count do
 		sepB = originalContent:find("%]}", sepA)
 		if not sepB then
-			sepC = originalContent:find("}", sepA)
+			sepC = originalContent:find("}\n", sepA)
 			if sepC then
 				local tempStringA = originalContent:sub(sepA, sepC)
 				sepA = originalContent:find("{", sepC)

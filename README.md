@@ -15,6 +15,8 @@ A BeamMP `Client mod <=> Server plugin` pair enabling a stock freeroam gamemode 
 - pretty much all other map points of interests
 
 ## Under the hood
+- traffic light sync **(new!)**
+- red light / speed trap broadcasts **(new!)**
 - syncing prefab loading and collision across clients
 - syncing the active states (shown or hidden) of vehicles
 - nametag visibility supression for many spawnables including traffic to limit spam

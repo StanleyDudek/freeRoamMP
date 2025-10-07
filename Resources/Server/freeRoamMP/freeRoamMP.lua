@@ -2,18 +2,68 @@
 
 local vehicleStates = {}
 local loadedPrefabs = {}
+local signalTimer = MP.CreateTimer()
+
+local trapNames = {
+    [1] = "Riverway Plaza",
+    [2] = "Plaza North Bound",
+    [3] = "Plaza South Bound",
+    [4] = "Beach",
+    [5] = "Lighthouse",
+    [6] = "Island Port North Bound",
+    [7] = "Island Port South Bound"
+}
 
 function onInit()
 	MP.RegisterEvent("freeRoamPrefabSync","freeRoamPrefabSync")
 	MP.RegisterEvent("freeRoamSyncRequested","freeRoamSyncRequested")
 	MP.RegisterEvent("freeRoamVehSyncRequested","freeRoamVehSyncRequested")
 	MP.RegisterEvent("freeRoamVehicleActiveHandler","freeRoamVehicleActiveHandler")
+
+	MP.RegisterEvent("speedTrap", "speedTrap")
+    MP.RegisterEvent("redLight", "redLight")
+    MP.RegisterEvent("trafficLightTimer","trafficLightTimer")
+	MP.CreateEventTimer("trafficLightTimer", 10000)
+
 	MP.RegisterEvent("onPlayerJoin","onPlayerJoinHandler")
 	MP.RegisterEvent("onVehicleSpawn","onVehicleSpawnHandler")
 	MP.RegisterEvent("onVehicleEdited","onVehicleEditedHandler")
 	MP.RegisterEvent("onVehicleDeleted","onVehicleDeletedHandler")
 	MP.RegisterEvent("onPlayerDisconnect","onPlayerDisconnectHandler")
+
 	print("[freeRoam] ---------- freeRoam Loaded!")
+end
+
+function speedTrap(player_id, data)
+    local speedTrapData = Util.JsonDecode(data)
+    local triggerName = speedTrapData.triggerName
+    local triggerNumber = tonumber(string.match(triggerName, "%d+"))
+    local triggerPlace = trapNames[triggerNumber] or "Unknown"
+    local player_name = MP.GetPlayerName(player_id)
+    MP.SendChatMessage( -1, "Speed Violation by " .. player_name .. "!")
+    MP.SendChatMessage( -1, "Speed: " .. string.format( "%.1f", speedTrapData.playerSpeed * 2.23694 ) .. " in " .. string.format( "%.0f", speedTrapData.speedLimit * 2.23694 ) .. " MPH Zone" )
+    MP.SendChatMessage( -1, "Location: " .. triggerPlace)
+    MP.SendChatMessage( -1, "Vehicle: " .. speedTrapData.vehicleModel )
+    MP.SendChatMessage( -1, "Plate: " .. speedTrapData.licensePlate )
+end
+
+function redLight(player_id, data)
+    local redLightData = Util.JsonDecode(data)
+    local triggerName = redLightData.triggerName
+    local triggerNumber = tonumber(string.match(triggerName, "%d+"))
+    local triggerPlace = trapNames[triggerNumber] or "Unknown"
+    local player_name = MP.GetPlayerName(player_id)
+    MP.SendChatMessage( -1, "Failure to stop at Red Light by " .. player_name .. "!")
+    MP.SendChatMessage( -1, "Speed: " .. string.format( "%.1f", redLightData.playerSpeed * 2.23694 ) .. " MPH" )
+    MP.SendChatMessage( -1, "Location: " .. triggerPlace)
+    MP.SendChatMessage( -1, "Vehicle: " .. redLightData.vehicleModel )
+    MP.SendChatMessage( -1, "Plate: " .. redLightData.licensePlate )
+end
+
+function trafficLightTimer()
+	if #MP.GetPlayers() >= 1 then
+		MP.TriggerClientEvent(-1, "rxTrafficSignalTimer", tostring(signalTimer:GetCurrent()))
+	end
 end
 
 function freeRoamVehSyncRequested(player_id)

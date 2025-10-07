@@ -211,6 +211,10 @@ local function onUpdate(dt)
 	end
 end
 
+local function rxTrafficSignalTimer(data)
+	core_trafficSignals.setTimer(tonumber(data))
+end
+
 local function rxFreeRoamVehSync(data)
 	if data ~= "null" then
 		local vehicleStates = jsonDecode(data)
@@ -614,6 +618,30 @@ local function onVehicleReady(gameVehicleID)
 	end
 end
 
+local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
+    if MPVehicleGE.isOwn(speedTrapData.subjectID) then
+        local veh = be:getObjectByID(speedTrapData.subjectID)
+        local highscore, leaderboard = gameplay_speedTrapLeaderboards.addRecord(speedTrapData, playerSpeed, overSpeed, veh)
+        speedTrapData.licensePlate = veh:getDynDataFieldbyName("licenseText", 0) or "Illegible"
+        speedTrapData.vehicleModel = core_vehicles.getModel(veh.JBeam).model.Name
+        speedTrapData.playerSpeed = playerSpeed
+        speedTrapData.overSpeed = overSpeed
+        speedTrapData.highscore = highscore
+        speedTrapData.leaderboard = leaderboard
+        TriggerServerEvent("speedTrap", jsonEncode( speedTrapData ) )
+    end
+end
+
+local function onRedLightCamTriggered(redLightData, playerSpeed)
+    if MPVehicleGE.isOwn(redLightData.subjectID) then
+        local veh = be:getObjectByID(redLightData.subjectID)
+        redLightData.licensePlate = veh:getDynDataFieldbyName("licenseText", 0) or "Illegible"
+        redLightData.vehicleModel = core_vehicles.getModel(veh.JBeam).model.Name
+        redLightData.playerSpeed = playerSpeed
+        TriggerServerEvent("redLight", jsonEncode( redLightData ) )
+    end
+end
+
 local function onExtensionLoaded()
 	if not settings.getValue("trafficSimpleVehicles") then
 		originalSimplifiedTrafficValue = false
@@ -621,6 +649,7 @@ local function onExtensionLoaded()
 	end
 	AddEventHandler("rxPrefabSync", rxPrefabSync)
 	AddEventHandler("rxFreeRoamVehSync", rxFreeRoamVehSync)
+	AddEventHandler("rxTrafficSignalTimer", rxTrafficSignalTimer)
 	log('W', 'freeRoamMP', 'freeRoamMP LOADED!')
 end
 
@@ -638,6 +667,9 @@ M.onWorldReadyState = onWorldReadyState
 
 M.onAnyMissionChanged = onAnyMissionChanged
 M.onMissionStartWithFade = onMissionStartWithFade
+
+M.onSpeedTrapTriggered = onSpeedTrapTriggered
+M.onRedLightCamTriggered = onRedLightCamTriggered
 
 M.onFreeroamChallengeTerminated = onFreeroamChallengeTerminated
 M.onFreeroamChallengeCompleted = onFreeroamChallengeCompleted

@@ -6,6 +6,7 @@ local originalSimplifiedTrafficValue = true
 
 local freeRoam = false
 local syncRequested = false
+local driftRevert = false
 
 local prefabsTable = {}
 
@@ -94,8 +95,6 @@ local hiddens = {
 	woodplanks = "woodplanks",
 }
 
-
-
 local function handlePrefabsA(path, name)
 	local line_count = 0
 	local count = io.open(path, "r")
@@ -117,7 +116,7 @@ local function handlePrefabsA(path, name)
 	local sepB = 1
 	local sepC = 1
 	for i = 1, line_count do
-		sepB = originalContent:find("%]}", sepA)
+		sepB = originalContent:find("%]}\n", sepA)
 		if not sepB then
 			sepC = originalContent:find("}\n", sepA)
 			if sepC then
@@ -181,8 +180,8 @@ local function handlePrefabsB(path, name)
 	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
 end
 
-local function onUpdate(dt)
-	if worldReadyState == 2 then
+local function onWorldReadyState(state)
+	if state == 2 then
 		if not freeRoam then
 			core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
 			freeRoam = true
@@ -191,6 +190,11 @@ local function onUpdate(dt)
 			TriggerServerEvent("freeRoamSyncRequested", "")
 			syncRequested = true
 		end
+	end
+end
+
+local function onUpdate(dt)
+	if worldReadyState == 2 then
 		for name, data in pairs(prefabsTable) do
 			if data.outdated == true then
 				handlePrefabsB(data.path, name)
@@ -543,6 +547,14 @@ local function onMissionStartWithFade(mission, userSettings)
 	iterC = iterC + 1
 end
 
+local function onFreeroamChallengeTerminated(reason, concludingPhaseDuration)
+	core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
+end
+
+local function onFreeroamChallengeCompleted(data)
+	core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
+end
+
 local function onVehicleActiveChanged(gameVehicleID, active)
 	if gameVehicleID then
 		if MPVehicleGE.isOwn(gameVehicleID) then
@@ -571,6 +583,18 @@ local function onVehicleSpawned(gameVehicleID)
 		if veh then
 			veh:setField('renderDistance', '', 6969)
 			veh:queueLuaCommand('freeRoamMP.onVehicleReady()')
+		end
+	end
+end
+
+local function onGameStateUpdate(state)
+	if state.appLayout == "driftMission" then
+		driftRevert = true
+	end
+	if state.appLayout == "freeroam" then
+		if driftRevert then
+			core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
+			driftRevert = false
 		end
 	end
 end
@@ -607,10 +631,16 @@ local function onExtensionUnloaded()
 	log('W', 'freeRoamMP', 'freeRoamMP UNLOADED!')
 end
 
+M.onGameStateUpdate = onGameStateUpdate
+
 M.onUpdate = onUpdate
+M.onWorldReadyState = onWorldReadyState
 
 M.onAnyMissionChanged = onAnyMissionChanged
 M.onMissionStartWithFade = onMissionStartWithFade
+
+M.onFreeroamChallengeTerminated = onFreeroamChallengeTerminated
+M.onFreeroamChallengeCompleted = onFreeroamChallengeCompleted
 
 M.onVehicleActiveChanged = onVehicleActiveChanged
 M.onVehicleSpawned = onVehicleSpawned

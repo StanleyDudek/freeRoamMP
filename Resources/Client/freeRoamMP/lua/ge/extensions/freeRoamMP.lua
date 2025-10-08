@@ -2,6 +2,29 @@
 
 local M = {}
 
+local defaultAppLayoutDirectory = "settings/ui_apps/originalLayouts/default/"
+local missionAppLayoutDirectory = "settings/ui_apps/originalLayouts/mission/"
+local userDefaultAppLayoutDirectory = "settings/ui_apps/layouts/default/"
+local userMissionAppLayoutDirectory = "settings/ui_apps/layouts/mission/"
+
+local missionLayouts = {
+	driftMission = "driftMission",
+	driftNavigationMission = "driftNavigationMission",
+	evadeMission = "evadeMission",
+	garageToGarage = "garageToGarage",
+	rallyModeRecce = "rallyModeRecce",
+	rallyModeStage = "rallyModeStage",
+	scenarioMission = "scenarioMission",
+	timeTrialMission = "timeTrialMission",
+	aRunForLife = "aRunForLife",
+	basicMission = "basicMission",
+	crashTestMission = "crashTestMission",
+	crawlMission = "crawlMission",
+	dragMission = "dragMission",
+}
+
+local stateToUpdate
+
 local originalSimplifiedTrafficValue = true
 
 local freeRoam = false
@@ -207,6 +230,10 @@ local function onUpdate(dt)
 				be:reloadCollision()
 				break
 			end
+		end
+		if stateToUpdate then
+			ui_apps.requestUIAppsData()
+			stateToUpdate = false
 		end
 	end
 end
@@ -602,6 +629,231 @@ local function onGameStateUpdate(state)
 			driftRevert = false
 		end
 	end
+	if missionLayouts[state.appLayout] then
+		local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
+		local currentMpLayout = deepcopy(originalMpLayout)
+		local multiplayerchat
+		local multiplayersession
+		local multiplayerplayerlist
+		if currentMpLayout then
+			for _, app in pairs(currentMpLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					multiplayerchat = app
+				end
+				if app.appName == "multiplayersession" then
+					multiplayersession = app
+				end
+				if app.appName == "multiplayerplayerlist" then
+					multiplayerplayerlist = app
+				end
+			end
+			local missionLayout = jsonReadFile(missionAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
+			local currentLayout = deepcopy(missionLayout)
+			if multiplayerchat then
+				local found
+				if currentLayout then
+					for _, app in pairs(currentLayout.apps) do
+						if app.appName == "multiplayerchat" then
+							found = true
+						end
+					end
+					if not found then
+						if multiplayerchat then
+							table.insert(currentLayout.apps, multiplayerchat)
+						else
+							multiplayerchat = {
+								appName = "multiplayerchat",
+								placement = {
+									width = "550px",
+									bottom = "0px",
+									height = "170px",
+									left = "180px"
+								}
+							}
+							table.insert(currentLayout.apps, multiplayerchat)
+						end
+						stateToUpdate = true
+					end
+				end
+			end
+			if multiplayersession then
+				local found
+				if currentLayout then
+					for _, app in pairs(currentLayout.apps) do
+						if app.appName == "multiplayersession" then
+							found = true
+						end
+					end
+					if not found then
+						if multiplayersession then
+							table.insert(currentLayout.apps, multiplayersession)
+						else
+							multiplayersession = {
+								appName = "multiplayersession",
+								placement = {
+									bottom = "",
+									height = "40px",
+									left = 0,
+									margin = "auto",
+									position = "absolute",
+									right = 0,
+									top = "0px",
+									width = "700px"
+								}
+							}
+							table.insert(currentLayout.apps, multiplayersession)
+						end
+						stateToUpdate = true
+					end
+				end
+			end
+			if multiplayerplayerlist then
+				local found
+				if currentLayout then
+					for _, app in pairs(currentLayout.apps) do
+						if app.appName == "multiplayerplayerlist" then
+							found = true
+						end
+					end
+					if not found then
+						if multiplayerplayerlist then
+							table.insert(currentLayout.apps, multiplayerplayerlist)
+						else
+							multiplayerplayerlist = {
+								appName = "multiplayerplayerlist",
+								placement = {
+									bottom = "",
+									height = "560px",
+									left = "",
+									position = "absolute",
+									right = "0px",
+									top = "30px",
+									width = "300px"
+								}
+							}
+							table.insert(currentLayout.apps, multiplayerplayerlist)
+						end
+						stateToUpdate = true
+					end
+				end
+			end
+			if stateToUpdate then
+				jsonWriteFile(userMissionAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
+			end
+		end
+	elseif state.appLayout ~= 'multiplayer' and state.appLayout ~= 'freeroam' then
+		local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
+		local currentMpLayout = deepcopy(originalMpLayout)
+		local multiplayerchat
+		local multiplayersession
+		local multiplayerplayerlist
+		if currentMpLayout then
+			for _, app in pairs(currentMpLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					multiplayerchat = app
+				end
+				if app.appName == "multiplayersession" then
+					multiplayersession = app
+				end
+				if app.appName == "multiplayerplayerlist" then
+					multiplayerplayerlist = app
+				end
+			end
+			local nonMPLayout = jsonReadFile(defaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
+			local currentLayout = deepcopy(nonMPLayout)
+			if multiplayerchat then
+				local found
+				if currentLayout then
+					for _, app in pairs(currentLayout.apps) do
+						if app.appName == "multiplayerchat" then
+							found = true
+						end
+					end
+					if not found then
+						if multiplayerchat then
+							table.insert(currentLayout.apps, multiplayerchat)
+						else
+							multiplayerchat = {
+								appName = "multiplayerchat",
+								placement = {
+									width = "550px",
+									bottom = "0px",
+									height = "170px",
+									left = "180px"
+								}
+							}
+							table.insert(currentLayout.apps, multiplayerchat)
+						end
+						stateToUpdate = true
+					end
+				end
+			end
+			if multiplayersession then
+				local found
+				if currentLayout then
+					for _, app in pairs(currentLayout.apps) do
+						if app.appName == "multiplayersession" then
+							found = true
+						end
+					end
+					if not found then
+						if multiplayersession then
+							table.insert(currentLayout.apps, multiplayersession)
+						else
+							multiplayersession = {
+								appName = "multiplayersession",
+								placement = {
+									bottom = "",
+									height = "40px",
+									left = 0,
+									margin = "auto",
+									position = "absolute",
+									right = 0,
+									top = "0px",
+									width = "700px"
+								}
+							}
+							table.insert(currentLayout.apps, multiplayersession)
+						end
+						stateToUpdate = true
+					end
+				end
+			end
+			if multiplayerplayerlist then
+				local found
+				if currentLayout then
+					for _, app in pairs(currentLayout.apps) do
+						if app.appName == "multiplayerplayerlist" then
+							found = true
+						end
+					end
+					if not found then
+						if multiplayerplayerlist then
+							table.insert(currentLayout.apps, multiplayerplayerlist)
+						else
+							multiplayerplayerlist = {
+								appName = "multiplayerplayerlist",
+								placement = {
+									bottom = "",
+									height = "560px",
+									left = "",
+									position = "absolute",
+									right = "0px",
+									top = "30px",
+									width = "300px"
+								}
+							}
+							table.insert(currentLayout.apps, multiplayerplayerlist)
+						end
+						stateToUpdate = true
+					end
+				end
+			end
+			if stateToUpdate then
+				jsonWriteFile(userMissionAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
+			end
+		end
+	end
 end
 
 local function onVehicleReady(gameVehicleID)
@@ -685,4 +937,3 @@ M.onExtensionUnloaded = onExtensionUnloaded
 M.onInit = function() setExtensionUnloadMode(M, 'manual') end
 
 return M
-

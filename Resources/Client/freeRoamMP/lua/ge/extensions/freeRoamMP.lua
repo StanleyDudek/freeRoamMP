@@ -560,20 +560,21 @@ local function onFreeroamChallengeCompleted(data)
 end
 
 local function onVehicleActiveChanged(gameVehicleID, active)
-	if gameVehicleID then
+	local vehicles = MPVehicleGE.getVehicles()
+	local serverVehicleID
+	for _, vehicle in pairs(vehicles) do
+		if vehicle.serverVehicleID then
+			serverVehicleID = vehicle.serverVehicleID
+		end
+	end
+	if serverVehicleID then
 		if MPVehicleGE.isOwn(gameVehicleID) then
-			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
-			if serverVehicleID then
-				local data = {}
-				data.active = active
-				data.serverVehicleID = serverVehicleID
-				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
-			end
+			local data = {}
+			data.active = active
+			data.serverVehicleID = serverVehicleID
+			TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
 		else
-			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
-			if serverVehicleID then
-				TriggerServerEvent("freeRoamVehSyncRequested", "")
-			end
+			TriggerServerEvent("freeRoamVehSyncRequested", "")
 		end
 	end
 end
@@ -684,3 +685,4 @@ M.onExtensionUnloaded = onExtensionUnloaded
 M.onInit = function() setExtensionUnloadMode(M, 'manual') end
 
 return M
+

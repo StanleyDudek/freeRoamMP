@@ -23,6 +23,8 @@ local missionLayouts = {
 	dragMission = "dragMission",
 }
 
+local dragData
+
 local stateToUpdate
 
 local originalSimplifiedTrafficValue = true
@@ -117,6 +119,90 @@ local hiddens = {
 	woodcrate = "woodcrate",
 	woodplanks = "woodplanks",
 }
+
+local function initDisplay()
+  local displayDigits = {
+    timeDigits = {},
+    speedDigits = {}
+  }
+  local time = {}
+  local speed = {}
+  for i=1, 5 do
+    local timeDigit = scenetree.findObject("display_time_" .. i .. "_r")
+    table.insert(time, timeDigit)
+
+    local speedDigit = scenetree.findObject("display_speed_" .. i .. "_r")
+    table.insert(speed, speedDigit)
+  end
+  table.insert(displayDigits.timeDigits, time)
+  table.insert(displayDigits.speedDigits, speed)
+
+  time = {}
+  speed = {}
+
+  for i=1, 5 do
+    local timeDigit = scenetree.findObject("display_time_" .. i .. "_l")
+    table.insert(time, timeDigit)
+
+    local speedDigit = scenetree.findObject("display_speed_" .. i .. "_l")
+    table.insert(speed, speedDigit)
+  end
+  table.insert(displayDigits.timeDigits, time)
+  table.insert(displayDigits.speedDigits, speed)
+
+  if not displayDigits then
+    return
+  end
+  return displayDigits
+end
+
+local function rxUpdateDisplay(data)
+	local decodedData = jsonDecode(data)
+	if gameplay_drag_general then
+		gameplay_drag_general.setDragRaceData(decodedData.dragData)
+		dragData = gameplay_drag_general.getData()
+	end
+	local timeDisplayValue = decodedData.timeDisplayValue
+	local speedDisplayValue = decodedData.speedDisplayValue
+	local timeDigits
+	local speedDigits
+	dragData.strip.displayDigits = initDisplay()
+	timeDigits = dragData.strip.displayDigits.timeDigits[decodedData.lane]
+	speedDigits = dragData.strip.displayDigits.speedDigits[decodedData.lane]
+	speedDigits = dragData.strip.displayDigits.speedDigits[decodedData.lane]
+	if #timeDisplayValue > 0 and #timeDisplayValue < 6 then
+		for i,v in ipairs(timeDisplayValue) do
+			timeDigits[i]:preApply()
+			timeDigits[i]:setField('shapeName', 0, "art/shapes/quarter_mile_display/display_".. v ..".dae")
+			timeDigits[i]:setHidden(false)
+			timeDigits[i]:postApply()
+		end
+	end
+	for i,v in ipairs(speedDisplayValue) do
+		if speedDigits and speedDigits[i] then
+			speedDigits[i]:preApply()
+			speedDigits[i]:setField('shapeName', 0, "art/shapes/quarter_mile_display/display_".. v ..".dae")
+			speedDigits[i]:setHidden(false)
+			speedDigits[i]:postApply()
+		end
+	end
+end
+
+local function clearDisplay()
+	if not dragData then return end
+	for _, digitTypeData in pairs(dragData.strip.displayDigits) do
+		for _,laneTypeData in ipairs(digitTypeData) do
+			for _,digit in ipairs(laneTypeData) do
+				digit:setHidden(true)
+			end
+		end
+	end
+	dragData = nil
+end
+
+local function rxClearAll(data)
+  	clearDisplay()
+end
 
 local function handlePrefabsA(path, name)
 	local line_count = 0
@@ -899,6 +985,8 @@ local function onExtensionLoaded()
 		originalSimplifiedTrafficValue = false
 		settings.setValue("trafficSimpleVehicles", true)
 	end
+	AddEventHandler("rxUpdateDisplay", rxUpdateDisplay)
+	AddEventHandler("rxClearAll", rxClearAll)
 	AddEventHandler("rxPrefabSync", rxPrefabSync)
 	AddEventHandler("rxFreeRoamVehSync", rxFreeRoamVehSync)
 	AddEventHandler("rxTrafficSignalTimer", rxTrafficSignalTimer)

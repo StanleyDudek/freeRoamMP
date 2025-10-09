@@ -20,6 +20,9 @@ function onInit()
 	MP.RegisterEvent("freeRoamVehSyncRequested","freeRoamVehSyncRequested")
 	MP.RegisterEvent("freeRoamVehicleActiveHandler","freeRoamVehicleActiveHandler")
 
+	MP.RegisterEvent("txUpdateDisplay", "txUpdateDisplay")
+	MP.RegisterEvent("txClearAll", "txClearAll")
+
 	MP.RegisterEvent("speedTrap", "speedTrap")
     MP.RegisterEvent("redLight", "redLight")
     MP.RegisterEvent("trafficLightTimer","trafficLightTimer")
@@ -32,6 +35,22 @@ function onInit()
 	MP.RegisterEvent("onPlayerDisconnect","onPlayerDisconnectHandler")
 
 	print("[freeRoam] ---------- freeRoam Loaded!")
+end
+
+function txUpdateDisplay(player_id, data)
+	for id in pairs(MP.GetPlayers()) do
+		if player_id ~= id then
+			MP.TriggerClientEvent(id, "rxUpdateDisplay", data)
+		end
+	end
+end
+
+function txClearAll(player_id)
+	for id in pairs(MP.GetPlayers()) do
+		if player_id ~= id then
+			MP.TriggerClientEvent(id, "rxClearAll", "")
+		end
+	end
 end
 
 function speedTrap(player_id, data)

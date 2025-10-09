@@ -587,21 +587,20 @@ local function onFreeroamChallengeCompleted(data)
 end
 
 local function onVehicleActiveChanged(gameVehicleID, active)
-	local vehicles = MPVehicleGE.getVehicles()
-	local serverVehicleID
-	for _, vehicle in pairs(vehicles) do
-		if vehicle.serverVehicleID then
-			serverVehicleID = vehicle.serverVehicleID
-		end
-	end
-	if serverVehicleID then
+	if gameVehicleID then
 		if MPVehicleGE.isOwn(gameVehicleID) then
-			local data = {}
-			data.active = active
-			data.serverVehicleID = serverVehicleID
-			TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
+			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+			if serverVehicleID then
+				local data = {}
+				data.active = active
+				data.serverVehicleID = serverVehicleID
+				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
+			end
 		else
-			TriggerServerEvent("freeRoamVehSyncRequested", "")
+			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+			if serverVehicleID then
+				TriggerServerEvent("freeRoamVehSyncRequested", "")
+			end
 		end
 	end
 end

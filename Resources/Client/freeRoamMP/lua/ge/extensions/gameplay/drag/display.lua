@@ -193,13 +193,18 @@ local function clearDisplay()
       end
     end
   end
+  if MPVehicleGE.isOwn(be:getPlayerVehicleID(0)) then
+    TriggerServerEvent("txClearDisplay", "")
+  end
 end
 
 local function clearAll()
   clearLights()
   clearDisplay()
   math.randomseed(os.time())
-  TriggerServerEvent("txClearAll", "" )
+  if MPVehicleGE.isOwn(be:getPlayerVehicleID(0)) then
+    TriggerServerEvent("txClearAll", "")
+  end
 end
 
 local function onExtensionLoaded()
@@ -260,7 +265,9 @@ local function updateDisplay(vehId)
       speedDigits[i]:postApply()
     end
   end
-  TriggerServerEvent("txUpdateDisplay", jsonEncode( { lane = lane, timeDisplayValue = timeDisplayValue, speedDisplayValue = speedDisplayValue, dragData = dragData } ))
+  if MPVehicleGE.isOwn(be:getPlayerVehicleID(0)) then
+    TriggerServerEvent("txUpdateDisplay", jsonEncode( { lane = lane, timeDisplayValue = timeDisplayValue, speedDisplayValue = speedDisplayValue, dragData = dragData } ))
+  end
 end
 
 local function handle400TreeLogic(timers, countDownLights, racer, vehId)
@@ -379,7 +386,9 @@ local function onUpdate(dtReal, dtSim, dtRaw)
       local treeLights = dragData.strip.treeLights[racer.lane]
       local timers = treeLights.timers
       local countDownLights = treeLights.countDownLights
-
+      if not timers.dialOffset then
+        timers.dialOffset = 0
+      end
       timers.dialOffset = timers.dialOffset - dtSim
 
       if timers.dialOffset <= 0 then
@@ -426,6 +435,9 @@ local function onWinnerLightOn(lane)
       driverLightBlinkState.isBlinking = true
       driverLightBlinkState.timer = 0
     end
+  end
+  if MPVehicleGE.isOwn(be:getPlayerVehicleID(0)) then
+    TriggerServerEvent("txUpdateWinnerLight", jsonEncode( { driverLightBlinkState = driverLightBlinkState, dragData = dragData}))
   end
 end
 

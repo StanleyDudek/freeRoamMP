@@ -25,6 +25,14 @@ local missionLayouts = {
 
 local dragData
 
+local driverLightBlinkState = {
+	lane = nil,
+	isBlinking = false,
+	timer = 0,
+	frequency = 1/6,
+	isOn = false
+}
+
 local stateToUpdate
 
 local originalSimplifiedTrafficValue = true
@@ -120,56 +128,180 @@ local hiddens = {
 	woodplanks = "woodplanks",
 }
 
+local function findLightObject(name, prefabId)
+	if prefabId then
+		local prefabInstance = scenetree.findObjectById(prefabId)
+		if prefabInstance then
+			local obj = prefabInstance:findObject(name)
+			if obj then
+				return obj
+			end
+		end
+	end
+	return scenetree.findObject(name)
+end
+
+local function createTreeLights(lane, prefabId)
+	return {
+		stageLights = {
+			prestageLight  = {obj = findLightObject("Prestagelight_" .. lane, prefabId),       anim = "prestage", isOn = false},
+			stageLight     = {obj = findLightObject("Stagelight_" .. lane, prefabId),          anim = "prestage", isOn = false},
+			winnerLight    = {obj = findLightObject("WinLight_Timeboard_" .. lane, prefabId),  anim = "prestage", isOn = false},
+			driverLight    = {obj = findLightObject("WinLight_Driver_" .. lane, prefabId),     anim = "prestage", isOn = false},
+		},
+		countDownLights = {
+			amberLight1    = {obj = findLightObject("Amberlight1_" .. lane, prefabId), anim = "tree", isOn = false},
+			amberLight2    = {obj = findLightObject("Amberlight2_" .. lane, prefabId), anim = "tree", isOn = false},
+			amberLight3    = {obj = findLightObject("Amberlight3_" .. lane, prefabId), anim = "tree", isOn = false},
+			greenLight     = {obj = findLightObject("Greenlight_" .. lane, prefabId),  anim = "tree", isOn = false},
+			redLight       = {obj = findLightObject("Redlight_" .. lane, prefabId),    anim = "tree", isOn = false},
+		},
+		globalLights = {
+			blueLight = {obj = findLightObject("BlueLight", prefabId), anim = "prestage", isOn = false},
+		},
+		timers = {
+			dialOffset = 0,
+			laneTimer = 0,
+			laneTimerFlag = false
+		}
+	}
+end
+
+local function initTree()
+	local prefabId = nil
+	if dragData and dragData.prefabs and dragData.prefabs.christmasTree then
+		prefabId = dragData.prefabs.christmasTree.prefabId
+	end
+
+	local treeLights = {}
+	for laneIndex = 1, #dragData.strip.lanes do
+		treeLights[laneIndex] = createTreeLights(laneIndex, prefabId)
+	end
+	return treeLights
+end
+
+local function updateTreeLightsUI(vehId, changes)
+	if not changes then
+		return
+	end
+	if not vehId then
+		guihooks.trigger("updateTreeLightApp", changes)
+	end
+end
+
 local function initDisplay()
-  local displayDigits = {
-    timeDigits = {},
-    speedDigits = {}
-  }
-  local time = {}
-  local speed = {}
-  for i=1, 5 do
-    local timeDigit = scenetree.findObject("display_time_" .. i .. "_r")
-    table.insert(time, timeDigit)
+	local displayDigits = {
+		timeDigits = {},
+		speedDigits = {}
+	}
+	local time = {}
+	local speed = {}
+	for i=1, 5 do
+		local timeDigit = scenetree.findObject("display_time_" .. i .. "_r")
+		table.insert(time, timeDigit)
 
-    local speedDigit = scenetree.findObject("display_speed_" .. i .. "_r")
-    table.insert(speed, speedDigit)
-  end
-  table.insert(displayDigits.timeDigits, time)
-  table.insert(displayDigits.speedDigits, speed)
+		local speedDigit = scenetree.findObject("display_speed_" .. i .. "_r")
+		table.insert(speed, speedDigit)
+	end
+	table.insert(displayDigits.timeDigits, time)
+	table.insert(displayDigits.speedDigits, speed)
 
-  time = {}
-  speed = {}
+	time = {}
+	speed = {}
 
-  for i=1, 5 do
-    local timeDigit = scenetree.findObject("display_time_" .. i .. "_l")
-    table.insert(time, timeDigit)
+	for i=1, 5 do
+		local timeDigit = scenetree.findObject("display_time_" .. i .. "_l")
+		table.insert(time, timeDigit)
 
-    local speedDigit = scenetree.findObject("display_speed_" .. i .. "_l")
-    table.insert(speed, speedDigit)
-  end
-  table.insert(displayDigits.timeDigits, time)
-  table.insert(displayDigits.speedDigits, speed)
+		local speedDigit = scenetree.findObject("display_speed_" .. i .. "_l")
+		table.insert(speed, speedDigit)
+	end
+	table.insert(displayDigits.timeDigits, time)
+	table.insert(displayDigits.speedDigits, speed)
 
-  if not displayDigits then
-    return
-  end
-  return displayDigits
+	if not displayDigits then
+		return
+	end
+	return displayDigits
+end
+
+local function clearLights()
+	if not dragData then
+		return
+	end
+	for _, laneTree in ipairs(dragData.strip.treeLights) do
+		for _,group in pairs(laneTree) do
+			if type(group) == "table" then
+				for _,light in pairs(group) do
+					if type(light) == "table" and light.obj then
+						light.obj:setHidden(true)
+						light.isOn = false
+					end
+				end
+			end
+		end
+		laneTree.timers.laneTimer = 0
+		laneTree.timers.laneTimerFlag = false
+		laneTree.timers.dialOffset = 0
+	end
+	updateTreeLightsUI(nil, {
+		stageLights = {
+			prestageLight = false,
+			stageLight = false
+		},
+		countDownLights = {
+			amberLight1 = false,
+			amberLight2 = false,
+			amberLight3 = false,
+			greenLight = false,
+			redLight = false
+		},
+		globalLights = {
+			blueLight = false
+		}
+	})
+	driverLightBlinkState = {
+		lane = nil,
+		isBlinking = false,
+		timer = 0,
+		frequency = 1/6,
+		isOn = false
+	}
+end
+
+local function clearDisplay()
+	if not dragData then
+		return
+	end
+	for _, digitTypeData in pairs(dragData.strip.displayDigits) do
+		for _,laneTypeData in ipairs(digitTypeData) do
+			for _,digit in ipairs(laneTypeData) do
+				digit:setHidden(true)
+			end
+		end
+	end
 end
 
 local function rxUpdateDisplay(data)
 	local decodedData = jsonDecode(data)
 	if gameplay_drag_general then
-		gameplay_drag_general.setDragRaceData(decodedData.dragData)
-		dragData = gameplay_drag_general.getData()
+		if not dragData then
+			gameplay_drag_general.setDragRaceData(decodedData.dragData)
+			dragData = gameplay_drag_general.getData()
+		end
+	end
+	if dragData then
+		dragData.strip.displayDigits = initDisplay()
+		dragData.strip.treeLights = initTree()
+		guihooks.trigger('updateTreeLightStaging', true)
 	end
 	local timeDisplayValue = decodedData.timeDisplayValue
 	local speedDisplayValue = decodedData.speedDisplayValue
 	local timeDigits
 	local speedDigits
-	dragData.strip.displayDigits = initDisplay()
-	timeDigits = dragData.strip.displayDigits.timeDigits[decodedData.lane]
-	speedDigits = dragData.strip.displayDigits.speedDigits[decodedData.lane]
-	speedDigits = dragData.strip.displayDigits.speedDigits[decodedData.lane]
+	local lane = decodedData.lane
+	timeDigits = dragData.strip.displayDigits.timeDigits[lane]
+	speedDigits = dragData.strip.displayDigits.speedDigits[lane]
 	if #timeDisplayValue > 0 and #timeDisplayValue < 6 then
 		for i,v in ipairs(timeDisplayValue) do
 			timeDigits[i]:preApply()
@@ -188,19 +320,52 @@ local function rxUpdateDisplay(data)
 	end
 end
 
-local function clearDisplay()
-	if not dragData then return end
-	for _, digitTypeData in pairs(dragData.strip.displayDigits) do
-		for _,laneTypeData in ipairs(digitTypeData) do
-			for _,digit in ipairs(laneTypeData) do
-				digit:setHidden(true)
-			end
+local function rxUpdateWinnerLight(data)
+	local decodedData = jsonDecode(data)
+	if gameplay_drag_general then
+		if not dragData then
+			gameplay_drag_general.setDragRaceData(decodedData.dragData)
+			dragData = gameplay_drag_general.getData()
 		end
 	end
-	dragData = nil
+	driverLightBlinkState = decodedData.driverLightBlinkState
+	local lane = driverLightBlinkState.lane
+	local prefabId = dragData.prefabs.christmasTree.prefabId
+	dragData.strip.treeLights[lane].stageLights.winnerLight.obj = findLightObject("WinLight_Timeboard_" .. lane, prefabId)
+	dragData.strip.treeLights[lane].stageLights.driverLight.obj = findLightObject("WinLight_Driver_" .. lane, prefabId)
+	if lane then
+		if dragData.strip.treeLights[lane].stageLights.winnerLight and dragData.strip.treeLights[lane].stageLights.winnerLight.obj then
+			dragData.strip.treeLights[lane].stageLights.winnerLight.isOn = true
+			dragData.strip.treeLights[lane].stageLights.winnerLight.obj:setHidden(false)
+		end
+		if dragData.strip.treeLights[lane].stageLights.driverLight and dragData.strip.treeLights[lane].stageLights.driverLight.obj and not driverLightBlinkState.isBlinking then
+			dragData.strip.treeLights[lane].stageLights.driverLight.isOn = true
+			driverLightBlinkState.lane = lane
+			driverLightBlinkState.isBlinking = true
+			driverLightBlinkState.timer = 0
+		end
+	end
 end
 
-local function rxClearAll(data)
+local function rxClearAll()
+	if not dragData then
+		dragData = gameplay_drag_general.getData()
+		return
+	end
+	local prefabId = dragData.prefabs.christmasTree.prefabId
+	for i = 1, 2 do
+		local winnerLightObj = findLightObject("WinLight_Timeboard_" .. i, prefabId)
+		local driverLightObj = findLightObject("WinLight_Driver_" .. i, prefabId)
+		winnerLightObj:setHidden(true)
+		driverLightObj:setHidden(true)
+	end
+	clearLights()
+  	clearDisplay()
+	gameplay_drag_general.unloadRace()
+end
+
+local function onBeforeDragUnloadAllExtensions()
+	clearLights()
   	clearDisplay()
 end
 
@@ -302,7 +467,7 @@ local function onWorldReadyState(state)
 	end
 end
 
-local function onUpdate(dt)
+local function onUpdate(dtReal, dtSim, dtRaw)
 	if worldReadyState == 2 then
 		for name, data in pairs(prefabsTable) do
 			if data.outdated == true then
@@ -320,6 +485,25 @@ local function onUpdate(dt)
 		if stateToUpdate then
 			ui_apps.requestUIAppsData()
 			stateToUpdate = false
+		end
+	end
+	if driverLightBlinkState.isBlinking then
+		if dragData then
+			local driverLight = dragData.strip.treeLights[driverLightBlinkState.lane].stageLights.driverLight
+			driverLight.obj = findLightObject("WinLight_Driver_" .. driverLightBlinkState.lane, dragData.prefabs.christmasTree.prefabId)
+			if driverLight and driverLight.obj then
+				local newTimer = driverLightBlinkState.timer + dtSim
+				if newTimer >= driverLightBlinkState.frequency then
+					driverLightBlinkState.timer = newTimer % driverLightBlinkState.frequency
+					driverLightBlinkState.isOn = not driverLightBlinkState.isOn
+					driverLight.obj:setHidden(not driverLightBlinkState.isOn)
+				else
+					driverLightBlinkState.timer = newTimer
+				end
+			else
+				driverLightBlinkState.isBlinking = false
+				driverLightBlinkState.isOn = false
+			end
 		end
 	end
 end
@@ -985,7 +1169,9 @@ local function onExtensionLoaded()
 		originalSimplifiedTrafficValue = false
 		settings.setValue("trafficSimpleVehicles", true)
 	end
+
 	AddEventHandler("rxUpdateDisplay", rxUpdateDisplay)
+	AddEventHandler("rxUpdateWinnerLight", rxUpdateWinnerLight)
 	AddEventHandler("rxClearAll", rxClearAll)
 	AddEventHandler("rxPrefabSync", rxPrefabSync)
 	AddEventHandler("rxFreeRoamVehSync", rxFreeRoamVehSync)
@@ -1001,6 +1187,8 @@ local function onExtensionUnloaded()
 end
 
 M.onGameStateUpdate = onGameStateUpdate
+
+M.onBeforeDragUnloadAllExtensions = onBeforeDragUnloadAllExtensions
 
 M.onUpdate = onUpdate
 M.onWorldReadyState = onWorldReadyState

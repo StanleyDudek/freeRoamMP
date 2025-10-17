@@ -21,6 +21,8 @@ function onInit()
 	MP.RegisterEvent("freeRoamVehicleActiveHandler","freeRoamVehicleActiveHandler")
 
 	MP.RegisterEvent("txUpdateDisplay", "txUpdateDisplay")
+	MP.RegisterEvent("txUpdateWinnerLight", "txUpdateWinnerLight")
+	MP.RegisterEvent("txClearDisplay", "txClearDisplay")
 	MP.RegisterEvent("txClearAll", "txClearAll")
 
 	MP.RegisterEvent("speedTrap", "speedTrap")
@@ -41,6 +43,22 @@ function txUpdateDisplay(player_id, data)
 	for id in pairs(MP.GetPlayers()) do
 		if player_id ~= id then
 			MP.TriggerClientEvent(id, "rxUpdateDisplay", data)
+		end
+	end
+end
+
+function txUpdateWinnerLight(player_id, data)
+	for id in pairs(MP.GetPlayers()) do
+		if player_id ~= id then
+			MP.TriggerClientEvent(id, "rxUpdateWinnerLight", data)
+		end
+	end
+end
+
+function txClearDisplay(player_id)
+	for id in pairs(MP.GetPlayers()) do
+		if player_id ~= id then
+			MP.TriggerClientEvent(id, "rxClearDisplay", "")
 		end
 	end
 end

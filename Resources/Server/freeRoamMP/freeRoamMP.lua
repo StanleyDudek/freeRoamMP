@@ -98,9 +98,7 @@ function redLight(player_id, data)
 end
 
 function trafficLightTimer()
-	if #MP.GetPlayers() >= 1 then
-		MP.TriggerClientEvent(-1, "rxTrafficSignalTimer", tostring(signalTimer:GetCurrent()))
-	end
+	MP.TriggerClientEvent(-1, "rxTrafficSignalTimer", tostring(signalTimer:GetCurrent()))
 end
 
 function freeRoamVehSyncRequested(player_id)

@@ -2,10 +2,79 @@
 
 local M = {}
 
+--Setup
+local freeRoam = false
+local syncRequested = false
+
+local prefabsTable = {}
+
+local iterT = {}
+local iterC = 0
+
+--Paths
 local defaultAppLayoutDirectory = "settings/ui_apps/originalLayouts/default/"
 local missionAppLayoutDirectory = "settings/ui_apps/originalLayouts/mission/"
 local userDefaultAppLayoutDirectory = "settings/ui_apps/layouts/default/"
 local userMissionAppLayoutDirectory = "settings/ui_apps/layouts/mission/"
+
+--Default Settings Values
+local userTrafficSettings = {}
+local freeRoamMPTrafficSettings = {
+	trafficAmount = 3,
+	trafficExtraAmount = 3,
+	trafficExtraVehicles = false,
+	trafficParkedAmount = 0,
+	trafficParkedVehicles = false,
+	trafficLoadForFreeroam = false,
+	trafficSmartSelections = false,
+	trafficSimpleVehicles = true,
+	trafficAllowMods = true,
+	trafficEnableSwitching = false,
+	trafficMinimap = true
+}
+
+local userGameplaySettings = {}
+local freeRoamMPGameplaySettings = {
+	simplifyRemoteVehicles = false
+}
+
+--UI Layouts
+local stateToUpdate
+
+local defaultLayouts = {
+	freeroam = "freeroam",
+	garage = "garage",
+	garage_v2 = "garage_v2",
+	menu = "menu",
+	multiseatscenario = "multiseatscenario",
+	noncompeteScenario = "noncompeteScenario",
+	offroadScenario = "offroadScenario",
+	proceduralScenario = "proceduralScenario",
+	quickraceScenario = "quickraceScenario",
+	radial = "radial",
+	scenario = "scenario",
+	scenario_cinematic_start = "scenario_cinematic_start",
+	singleCheckpointScenario = "singleCheckpointScenario",
+	tasklist = "tasklist",
+	tasklistTall = "tasklistTall",
+	unicycle = "unicycle",
+	busRouteScenario = "busRouteScenario",
+	busStuntMinSpeed = "busStuntMinSpeed",
+	career = "career",
+	careerBigMap = "careerBigMap",
+	careerMission = "careerMission",
+	careerMissionEnd = "careerMissionEnd",
+	careerPause = "careerPause",
+	careerRefuel = "careerRefuel",
+	collectionEvent = "collectionEvent",
+	crawl = "crawl",
+	damageScenario = "damageScenario",
+	dderbyScenario = "dderbyScenario",
+	discover = "discover",
+	driftScenario = "driftScenario",
+	exploration = "exploration",
+	externalUI = "externalUI"
+}
 
 local missionLayouts = {
 	driftMission = "driftMission",
@@ -20,32 +89,47 @@ local missionLayouts = {
 	basicMission = "basicMission",
 	crashTestMission = "crashTestMission",
 	crawlMission = "crawlMission",
-	dragMission = "dragMission",
+	dragMission = "dragMission"
 }
 
-local dragData
-
-local driverLightBlinkState = {
-	lane = nil,
-	isBlinking = false,
-	timer = 0,
-	frequency = 1/6,
-	isOn = false
+local multiplayerchat = {
+	appName = "multiplayerchat",
+	placement = {
+		width = "550px",
+		bottom = "0px",
+		height = "170px",
+		left = "180px"
+	}
 }
 
-local stateToUpdate
+local multiplayersession = {
+	appName = "multiplayersession",
+	placement = {
+		bottom = "",
+		height = "40px",
+		left = 0,
+		margin = "auto",
+		position = "absolute",
+		right = 0,
+		top = "0px",
+		width = "700px"
+	}
+}
 
-local originalSimplifiedTrafficValue = true
+local multiplayerplayerlist = {
+	appName = "multiplayerplayerlist",
+	placement = {
+		bottom = "",
+		height = "560px",
+		left = "",
+		position = "absolute",
+		right = "0px",
+		top = "30px",
+		width = "300px"
+	}
+}
 
-local freeRoam = false
-local syncRequested = false
-local driftRevert = false
-
-local prefabsTable = {}
-
-local iterT = {}
-local iterC = 0
-
+--Hidden Nametags by Vehicle Model
 local hiddens = {
 	anticut = "anticut",
 	ball = "ball",
@@ -126,6 +210,17 @@ local hiddens = {
 	weightpad = "weightpad",
 	woodcrate = "woodcrate",
 	woodplanks = "woodplanks",
+}
+
+--Drag Race Displays
+local dragData
+
+local driverLightBlinkState = {
+	lane = nil,
+	isBlinking = false,
+	timer = 0,
+	frequency = 1/6,
+	isOn = false
 }
 
 local function findLightObject(name, prefabId)
@@ -364,154 +459,7 @@ local function rxClearAll()
 	gameplay_drag_general.unloadRace()
 end
 
-local function onBeforeDragUnloadAllExtensions()
-	clearLights()
-  	clearDisplay()
-end
-
-local function handlePrefabsA(path, name)
-	local line_count = 0
-	local count = io.open(path, "r")
-	if count == nil then
-		return
-	end
-	for line in count:lines() do
-		line_count = line_count + 1
-	end
-	count:close()
-	local file = io.open(path, "r")
-	if file == nil then
-		return
-	end
-	local originalContent = file:read("*all")
-	file:close()
-	local tempStringB = ""
-	local sepA = 1
-	local sepB = 1
-	local sepC = 1
-	for i = 1, line_count do
-		sepB = originalContent:find("%]}\n", sepA)
-		if not sepB then
-			sepC = originalContent:find("}\n", sepA)
-			if sepC then
-				local tempStringA = originalContent:sub(sepA, sepC)
-				sepA = originalContent:find("{", sepC)
-				local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
-				if not matchA then
-					tempStringB = tempStringB .. tempStringA .. "\n"
-				end
-			end
-		else
-			local tempStringA = originalContent:sub(sepA, sepB + 1)
-			sepA = originalContent:find("{", sepB)
-			local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
-			if not matchA then
-				tempStringB = tempStringB .. tempStringA .. "\n"
-			end
-		end
-		if not sepA then
-			break
-		end
-	end
-	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab.json"
-	local tempFile = io.open(tempPath, "w+")
-	if tempFile then
-		tempFile:write(tempStringB)
-		tempFile:close()
-	end
-	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
-end
-
-local function handlePrefabsB(path, name)
-	local f = io.open(path, "r")
-	if f == nil then
-		return
-	end
-	local originalContent = f:read("*all")
-	f:close()
-	local tempStringB = ""
-	local index = 1
-	for i = index, #originalContent do
-		local startBeam = originalContent:find("   new BeamNGVehicle%(", index)
-		if not startBeam then
-			tempStringB = tempStringB .. originalContent:sub(index)
-			break
-		end
-		tempStringB = tempStringB .. originalContent:sub(index, startBeam - 1)
-		local endBeam = originalContent:find("};", startBeam)
-		if endBeam then
-			index = endBeam + 2
-		else
-			break
-		end
-	end
-	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab"
-	local tempFile = io.open(tempPath, "w+")
-	if tempFile then
-		tempFile:write(tempStringB)
-		tempFile:close()
-	end
-	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
-end
-
-local function onWorldReadyState(state)
-	if state == 2 then
-		if not freeRoam then
-			core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
-			freeRoam = true
-		end
-		if not syncRequested then
-			TriggerServerEvent("freeRoamSyncRequested", "")
-			syncRequested = true
-		end
-	end
-end
-
-local function onUpdate(dtReal, dtSim, dtRaw)
-	if worldReadyState == 2 then
-		for name, data in pairs(prefabsTable) do
-			if data.outdated == true then
-				handlePrefabsB(data.path, name)
-				prefabsTable[name] = nil
-				be:reloadCollision()
-				break
-			elseif data.outdated == false then
-				handlePrefabsA(data.path, name)
-				prefabsTable[name] = nil
-				be:reloadCollision()
-				break
-			end
-		end
-		if stateToUpdate then
-			ui_apps.requestUIAppsData()
-			stateToUpdate = false
-		end
-	end
-	if driverLightBlinkState.isBlinking then
-		if dragData then
-			local driverLight = dragData.strip.treeLights[driverLightBlinkState.lane].stageLights.driverLight
-			driverLight.obj = findLightObject("WinLight_Driver_" .. driverLightBlinkState.lane, dragData.prefabs.christmasTree.prefabId)
-			if driverLight and driverLight.obj then
-				local newTimer = driverLightBlinkState.timer + dtSim
-				if newTimer >= driverLightBlinkState.frequency then
-					driverLightBlinkState.timer = newTimer % driverLightBlinkState.frequency
-					driverLightBlinkState.isOn = not driverLightBlinkState.isOn
-					driverLight.obj:setHidden(not driverLightBlinkState.isOn)
-				else
-					driverLightBlinkState.timer = newTimer
-				end
-			else
-				driverLightBlinkState.isBlinking = false
-				driverLightBlinkState.isOn = false
-			end
-		end
-	end
-end
-
-local function rxTrafficSignalTimer(data)
-	core_trafficSignals.setTimer(tonumber(data))
-end
-
+--Vehicles
 local function rxFreeRoamVehSync(data)
 	if data ~= "null" then
 		local vehicleStates = jsonDecode(data)
@@ -537,6 +485,128 @@ local function rxFreeRoamVehSync(data)
 			end
 		end
 	end
+end
+
+local function onVehicleActiveChanged(gameVehicleID, active)
+	if gameVehicleID then
+		if MPVehicleGE.isOwn(gameVehicleID) then
+			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+			if serverVehicleID then
+				local data = {}
+				data.active = active
+				data.serverVehicleID = serverVehicleID
+				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
+			end
+		else
+			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+			if serverVehicleID then
+				TriggerServerEvent("freeRoamVehSyncRequested", "")
+			end
+		end
+	end
+end
+
+local function onVehicleSpawned(gameVehicleID)
+	if gameVehicleID then
+		if not MPVehicleGE.isOwn(gameVehicleID) then
+			TriggerServerEvent("freeRoamVehSyncRequested", "")
+		end
+		local veh = be:getObjectByID(gameVehicleID)
+		if veh then
+			veh:setField('renderDistance', '', 6969)
+			veh:queueLuaCommand('freeRoamMP.onVehicleReady()')
+		end
+	end
+end
+
+local function onVehicleReady(gameVehicleID)
+	local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
+	if serverVehicleID then
+		if not MPVehicleGE.isOwn(gameVehicleID) then
+			local vehicles = MPVehicleGE.getVehicles()
+			local veh = be:getObjectByID(gameVehicleID)
+			if hiddens[veh.JBeam] then
+				vehicles[serverVehicleID].hideNametag = true
+			else
+				vehicles[serverVehicleID].hideNametag = false
+			end
+		end
+	end
+end
+
+local function onVehicleSwitched(oldGameVehicleID, newGameVehicleID)
+	local veh = be:getObjectByID(newGameVehicleID)
+	if hiddens[veh.JBeam] then
+		if not MPVehicleGE.isOwn(newGameVehicleID) then
+			be:enterNextVehicle(0, 1)
+		end
+	end
+end
+
+--Traffic
+local function getUserGameplaySettings()
+	userGameplaySettings.simplifyRemoteVehicles = settings.getValue("simplifyRemoteVehicles")
+end
+
+local function setGameplaySettings(gameplaySettings)
+	for setting, value in pairs(gameplaySettings) do
+		settings.setValue(setting, value)
+	end
+end
+
+local function getUserTrafficSettings()
+	userTrafficSettings.trafficAmount = settings.getValue('trafficAmount')
+	userTrafficSettings.trafficExtraAmount = settings.getValue('trafficExtraAmount')
+	userTrafficSettings.trafficExtraVehicles = settings.getValue('trafficExtraVehicles')
+	userTrafficSettings.trafficParkedAmount = settings.getValue('trafficParkedAmount')
+	userTrafficSettings.trafficParkedVehicles = settings.getValue('trafficParkedVehicles')
+	userTrafficSettings.trafficLoadForFreeroam = settings.getValue('trafficLoadForFreeroam')
+	userTrafficSettings.trafficSmartSelections = settings.getValue('trafficSmartSelections')
+	userTrafficSettings.trafficSimpleVehicles = settings.getValue('trafficSimpleVehicles')
+	userTrafficSettings.trafficAllowMods = settings.getValue('trafficAllowMods')
+	userTrafficSettings.trafficEnableSwitching = settings.getValue('trafficEnableSwitching')
+	userTrafficSettings.trafficMinimap = settings.getValue('trafficMinimap')
+end
+
+local function setTrafficSettings(trafficSettings)
+	for setting, value in pairs(trafficSettings) do
+		settings.setValue(setting, value)
+	end
+end
+
+local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
+    if MPVehicleGE.isOwn(speedTrapData.subjectID) then
+        local veh = be:getObjectByID(speedTrapData.subjectID)
+        local highscore, leaderboard = gameplay_speedTrapLeaderboards.addRecord(speedTrapData, playerSpeed, overSpeed, veh)
+        speedTrapData.licensePlate = veh:getDynDataFieldbyName("licenseText", 0) or "Illegible"
+        speedTrapData.vehicleModel = core_vehicles.getModel(veh.JBeam).model.Name
+        speedTrapData.playerSpeed = playerSpeed
+        speedTrapData.overSpeed = overSpeed
+        speedTrapData.highscore = highscore
+        speedTrapData.leaderboard = leaderboard
+        TriggerServerEvent("speedTrap", jsonEncode( speedTrapData ) )
+    end
+end
+
+local function onRedLightCamTriggered(redLightData, playerSpeed)
+    if MPVehicleGE.isOwn(redLightData.subjectID) then
+        local veh = be:getObjectByID(redLightData.subjectID)
+        redLightData.licensePlate = veh:getDynDataFieldbyName("licenseText", 0) or "Illegible"
+        redLightData.vehicleModel = core_vehicles.getModel(veh.JBeam).model.Name
+        redLightData.playerSpeed = playerSpeed
+        TriggerServerEvent("redLight", jsonEncode( redLightData ) )
+    end
+end
+
+local function rxTrafficSignalTimer(data)
+	core_trafficSignals.setTimer(tonumber(data))
+	local vehicles = MPVehicleGE.getVehicles()
+	local count = 0
+	for serverVehicleID, vehicle in pairs(vehicles) do
+		count = count + 1
+	end
+	count = count + freeRoamMPTrafficSettings.trafficExtraAmount
+	settings.setValue("trafficAmount", count)
 end
 
 local function rxPrefabSync(data)
@@ -825,6 +895,92 @@ local function rxPrefabSync(data)
 	end
 end
 
+--Prefabs
+local function handlePrefabsA(path, name)
+	local line_count = 0
+	local count = io.open(path, "r")
+	if count == nil then
+		return
+	end
+	for line in count:lines() do
+		line_count = line_count + 1
+	end
+	count:close()
+	local file = io.open(path, "r")
+	if file == nil then
+		return
+	end
+	local originalContent = file:read("*all")
+	file:close()
+	local tempStringB = ""
+	local sepA = 1
+	local sepB = 1
+	local sepC = 1
+	for i = 1, line_count do
+		sepB = originalContent:find("%]}\n", sepA)
+		if not sepB then
+			sepC = originalContent:find("}\n", sepA)
+			if sepC then
+				local tempStringA = originalContent:sub(sepA, sepC)
+				sepA = originalContent:find("{", sepC)
+				local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
+				if not matchA then
+					tempStringB = tempStringB .. tempStringA .. "\n"
+				end
+			end
+		else
+			local tempStringA = originalContent:sub(sepA, sepB + 1)
+			sepA = originalContent:find("{", sepB)
+			local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
+			if not matchA then
+				tempStringB = tempStringB .. tempStringA .. "\n"
+			end
+		end
+		if not sepA then
+			break
+		end
+	end
+	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab.json"
+	local tempFile = io.open(tempPath, "w+")
+	if tempFile then
+		tempFile:write(tempStringB)
+		tempFile:close()
+	end
+	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
+end
+
+local function handlePrefabsB(path, name)
+	local f = io.open(path, "r")
+	if f == nil then
+		return
+	end
+	local originalContent = f:read("*all")
+	f:close()
+	local tempStringB = ""
+	local index = 1
+	for i = index, #originalContent do
+		local startBeam = originalContent:find("   new BeamNGVehicle%(", index)
+		if not startBeam then
+			tempStringB = tempStringB .. originalContent:sub(index)
+			break
+		end
+		tempStringB = tempStringB .. originalContent:sub(index, startBeam - 1)
+		local endBeam = originalContent:find("};", startBeam)
+		if endBeam then
+			index = endBeam + 2
+		else
+			break
+		end
+	end
+	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab"
+	local tempFile = io.open(tempPath, "w+")
+	if tempFile then
+		tempFile:write(tempStringB)
+		tempFile:close()
+	end
+	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
+end
+
 local function onAnyMissionChanged(state, mission)
 	if state == "stopped" then
 		local prefab = {}
@@ -832,7 +988,6 @@ local function onAnyMissionChanged(state, mission)
 		prefab.pLoad = false
 		local data = jsonEncode(prefab)
 		TriggerServerEvent("freeRoamPrefabSync", data)
-		core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
 	end
 end
 
@@ -848,62 +1003,61 @@ local function onMissionStartWithFade(mission, userSettings)
 	iterC = iterC + 1
 end
 
-local function onFreeroamChallengeTerminated(reason, concludingPhaseDuration)
-	core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
-end
-
-local function onFreeroamChallengeCompleted(data)
-	core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
-end
-
-local function onVehicleActiveChanged(gameVehicleID, active)
-	if gameVehicleID then
-		if MPVehicleGE.isOwn(gameVehicleID) then
-			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
-			if serverVehicleID then
-				local data = {}
-				data.active = active
-				data.serverVehicleID = serverVehicleID
-				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
-			end
-		else
-			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
-			if serverVehicleID then
-				TriggerServerEvent("freeRoamVehSyncRequested", "")
-			end
-		end
-	end
-end
-
-local function onVehicleSpawned(gameVehicleID)
-	if gameVehicleID then
-		if not MPVehicleGE.isOwn(gameVehicleID) then
-			TriggerServerEvent("freeRoamVehSyncRequested", "")
-		end
-		local veh = be:getObjectByID(gameVehicleID)
-		if veh then
-			veh:setField('renderDistance', '', 6969)
-			veh:queueLuaCommand('freeRoamMP.onVehicleReady()')
-		end
-	end
-end
-
+--State and UI Apps
 local function onGameStateUpdate(state)
-	if state.appLayout == "driftMission" then
-		driftRevert = true
-	end
-	if state.appLayout == "freeroam" then
-		if driftRevert then
-			core_gamestate.setGameState('freeroam', 'multiplayer', 'multiplayer')
-			driftRevert = false
+	local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
+	local currentMpLayout = deepcopy(originalMpLayout)
+	if defaultLayouts[state.appLayout] then
+		local found
+		if currentMpLayout then
+			for _, app in pairs(currentMpLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					multiplayerchat = app
+				end
+				if app.appName == "multiplayersession" then
+					multiplayersession = app
+				end
+				if app.appName == "multiplayerplayerlist" then
+					multiplayerplayerlist = app
+				end
+			end
+			local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
+			local currentLayout = deepcopy(defaultLayout)
+			if currentLayout then
+				for _, app in pairs(currentLayout.apps) do
+					if app.appName == "multiplayerchat" then
+						found = true
+					end
+				end
+				if not found then
+					table.insert(currentLayout.apps, multiplayerchat)
+					stateToUpdate = true
+				end
+				for _, app in pairs(currentLayout.apps) do
+					if app.appName == "multiplayersession" then
+						found = true
+					end
+				end
+				if not found then
+					table.insert(currentLayout.apps, multiplayersession)
+					stateToUpdate = true
+				end
+				for _, app in pairs(currentLayout.apps) do
+					if app.appName == "multiplayerplayerlist" then
+						found = true
+					end
+				end
+				if not found then
+					table.insert(currentLayout.apps, multiplayerplayerlist)
+					stateToUpdate = true
+				end
+			end
+			if stateToUpdate then
+				jsonWriteFile(userDefaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
+			end
 		end
-	end
-	if missionLayouts[state.appLayout] then
-		local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
-		local currentMpLayout = deepcopy(originalMpLayout)
-		local multiplayerchat
-		local multiplayersession
-		local multiplayerplayerlist
+	elseif missionLayouts[state.appLayout] then
+		local found
 		if currentMpLayout then
 			for _, app in pairs(currentMpLayout.apps) do
 				if app.appName == "multiplayerchat" then
@@ -918,204 +1072,33 @@ local function onGameStateUpdate(state)
 			end
 			local missionLayout = jsonReadFile(missionAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
 			local currentLayout = deepcopy(missionLayout)
-			if multiplayerchat then
-				local found
-				if currentLayout then
-					for _, app in pairs(currentLayout.apps) do
-						if app.appName == "multiplayerchat" then
-							found = true
-						end
-					end
-					if not found then
-						if multiplayerchat then
-							table.insert(currentLayout.apps, multiplayerchat)
-						else
-							multiplayerchat = {
-								appName = "multiplayerchat",
-								placement = {
-									width = "550px",
-									bottom = "0px",
-									height = "170px",
-									left = "180px"
-								}
-							}
-							table.insert(currentLayout.apps, multiplayerchat)
-						end
-						stateToUpdate = true
+			if currentLayout then
+				for _, app in pairs(currentLayout.apps) do
+					if app.appName == "multiplayerchat" then
+						found = true
 					end
 				end
-			end
-			if multiplayersession then
-				local found
-				if currentLayout then
-					for _, app in pairs(currentLayout.apps) do
-						if app.appName == "multiplayersession" then
-							found = true
-						end
-					end
-					if not found then
-						if multiplayersession then
-							table.insert(currentLayout.apps, multiplayersession)
-						else
-							multiplayersession = {
-								appName = "multiplayersession",
-								placement = {
-									bottom = "",
-									height = "40px",
-									left = 0,
-									margin = "auto",
-									position = "absolute",
-									right = 0,
-									top = "0px",
-									width = "700px"
-								}
-							}
-							table.insert(currentLayout.apps, multiplayersession)
-						end
-						stateToUpdate = true
+				if not found then
+					table.insert(currentLayout.apps, multiplayerchat)
+					stateToUpdate = true
+				end
+				for _, app in pairs(currentLayout.apps) do
+					if app.appName == "multiplayersession" then
+						found = true
 					end
 				end
-			end
-			if multiplayerplayerlist then
-				local found
-				if currentLayout then
-					for _, app in pairs(currentLayout.apps) do
-						if app.appName == "multiplayerplayerlist" then
-							found = true
-						end
-					end
-					if not found then
-						if multiplayerplayerlist then
-							table.insert(currentLayout.apps, multiplayerplayerlist)
-						else
-							multiplayerplayerlist = {
-								appName = "multiplayerplayerlist",
-								placement = {
-									bottom = "",
-									height = "560px",
-									left = "",
-									position = "absolute",
-									right = "0px",
-									top = "30px",
-									width = "300px"
-								}
-							}
-							table.insert(currentLayout.apps, multiplayerplayerlist)
-						end
-						stateToUpdate = true
+				if not found then
+					table.insert(currentLayout.apps, multiplayersession)
+					stateToUpdate = true
+				end
+				for _, app in pairs(currentLayout.apps) do
+					if app.appName == "multiplayerplayerlist" then
+						found = true
 					end
 				end
-			end
-			if stateToUpdate then
-				jsonWriteFile(userMissionAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
-			end
-		end
-	elseif state.appLayout ~= 'multiplayer' and state.appLayout ~= 'freeroam' then
-		local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
-		local currentMpLayout = deepcopy(originalMpLayout)
-		local multiplayerchat
-		local multiplayersession
-		local multiplayerplayerlist
-		if currentMpLayout then
-			for _, app in pairs(currentMpLayout.apps) do
-				if app.appName == "multiplayerchat" then
-					multiplayerchat = app
-				end
-				if app.appName == "multiplayersession" then
-					multiplayersession = app
-				end
-				if app.appName == "multiplayerplayerlist" then
-					multiplayerplayerlist = app
-				end
-			end
-			local nonMPLayout = jsonReadFile(defaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
-			local currentLayout = deepcopy(nonMPLayout)
-			if multiplayerchat then
-				local found
-				if currentLayout then
-					for _, app in pairs(currentLayout.apps) do
-						if app.appName == "multiplayerchat" then
-							found = true
-						end
-					end
-					if not found then
-						if multiplayerchat then
-							table.insert(currentLayout.apps, multiplayerchat)
-						else
-							multiplayerchat = {
-								appName = "multiplayerchat",
-								placement = {
-									width = "550px",
-									bottom = "0px",
-									height = "170px",
-									left = "180px"
-								}
-							}
-							table.insert(currentLayout.apps, multiplayerchat)
-						end
-						stateToUpdate = true
-					end
-				end
-			end
-			if multiplayersession then
-				local found
-				if currentLayout then
-					for _, app in pairs(currentLayout.apps) do
-						if app.appName == "multiplayersession" then
-							found = true
-						end
-					end
-					if not found then
-						if multiplayersession then
-							table.insert(currentLayout.apps, multiplayersession)
-						else
-							multiplayersession = {
-								appName = "multiplayersession",
-								placement = {
-									bottom = "",
-									height = "40px",
-									left = 0,
-									margin = "auto",
-									position = "absolute",
-									right = 0,
-									top = "0px",
-									width = "700px"
-								}
-							}
-							table.insert(currentLayout.apps, multiplayersession)
-						end
-						stateToUpdate = true
-					end
-				end
-			end
-			if multiplayerplayerlist then
-				local found
-				if currentLayout then
-					for _, app in pairs(currentLayout.apps) do
-						if app.appName == "multiplayerplayerlist" then
-							found = true
-						end
-					end
-					if not found then
-						if multiplayerplayerlist then
-							table.insert(currentLayout.apps, multiplayerplayerlist)
-						else
-							multiplayerplayerlist = {
-								appName = "multiplayerplayerlist",
-								placement = {
-									bottom = "",
-									height = "560px",
-									left = "",
-									position = "absolute",
-									right = "0px",
-									top = "30px",
-									width = "300px"
-								}
-							}
-							table.insert(currentLayout.apps, multiplayerplayerlist)
-						end
-						stateToUpdate = true
-					end
+				if not found then
+					table.insert(currentLayout.apps, multiplayerplayerlist)
+					stateToUpdate = true
 				end
 			end
 			if stateToUpdate then
@@ -1125,51 +1108,67 @@ local function onGameStateUpdate(state)
 	end
 end
 
-local function onVehicleReady(gameVehicleID)
-	local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
-	if serverVehicleID then
-		if not MPVehicleGE.isOwn(gameVehicleID) then
-			local vehicles = MPVehicleGE.getVehicles()
-			local veh = be:getObjectByID(gameVehicleID)
-			if hiddens[veh.JBeam] then
-				vehicles[serverVehicleID].hideNametag = true
+--Initial Syncs and Updates
+local function onWorldReadyState(state)
+	if state == 2 then
+		if not freeRoam then
+			core_gamestate.setGameState('freeroam', 'freeroam', 'freeroam')
+			freeRoam = true
+		end
+		if not syncRequested then
+			TriggerServerEvent("freeRoamSyncRequested", "")
+			syncRequested = true
+		end
+	end
+end
+
+local function onUpdate(dtReal, dtSim, dtRaw)
+	if worldReadyState == 2 then
+		for name, data in pairs(prefabsTable) do
+			if data.outdated == true then
+				handlePrefabsB(data.path, name)
+				prefabsTable[name] = nil
+				be:reloadCollision()
+				break
+			elseif data.outdated == false then
+				handlePrefabsA(data.path, name)
+				prefabsTable[name] = nil
+				be:reloadCollision()
+				break
+			end
+		end
+		if stateToUpdate then
+			ui_apps.requestUIAppsData()
+			stateToUpdate = false
+		end
+	end
+	if driverLightBlinkState.isBlinking then
+		if dragData then
+			local driverLight = dragData.strip.treeLights[driverLightBlinkState.lane].stageLights.driverLight
+			driverLight.obj = findLightObject("WinLight_Driver_" .. driverLightBlinkState.lane, dragData.prefabs.christmasTree.prefabId)
+			if driverLight and driverLight.obj then
+				local newTimer = driverLightBlinkState.timer + dtSim
+				if newTimer >= driverLightBlinkState.frequency then
+					driverLightBlinkState.timer = newTimer % driverLightBlinkState.frequency
+					driverLightBlinkState.isOn = not driverLightBlinkState.isOn
+					driverLight.obj:setHidden(not driverLightBlinkState.isOn)
+				else
+					driverLightBlinkState.timer = newTimer
+				end
 			else
-				vehicles[serverVehicleID].hideNametag = false
+				driverLightBlinkState.isBlinking = false
+				driverLightBlinkState.isOn = false
 			end
 		end
 	end
 end
 
-local function onSpeedTrapTriggered(speedTrapData, playerSpeed, overSpeed)
-    if MPVehicleGE.isOwn(speedTrapData.subjectID) then
-        local veh = be:getObjectByID(speedTrapData.subjectID)
-        local highscore, leaderboard = gameplay_speedTrapLeaderboards.addRecord(speedTrapData, playerSpeed, overSpeed, veh)
-        speedTrapData.licensePlate = veh:getDynDataFieldbyName("licenseText", 0) or "Illegible"
-        speedTrapData.vehicleModel = core_vehicles.getModel(veh.JBeam).model.Name
-        speedTrapData.playerSpeed = playerSpeed
-        speedTrapData.overSpeed = overSpeed
-        speedTrapData.highscore = highscore
-        speedTrapData.leaderboard = leaderboard
-        TriggerServerEvent("speedTrap", jsonEncode( speedTrapData ) )
-    end
-end
-
-local function onRedLightCamTriggered(redLightData, playerSpeed)
-    if MPVehicleGE.isOwn(redLightData.subjectID) then
-        local veh = be:getObjectByID(redLightData.subjectID)
-        redLightData.licensePlate = veh:getDynDataFieldbyName("licenseText", 0) or "Illegible"
-        redLightData.vehicleModel = core_vehicles.getModel(veh.JBeam).model.Name
-        redLightData.playerSpeed = playerSpeed
-        TriggerServerEvent("redLight", jsonEncode( redLightData ) )
-    end
-end
-
+--Loading / Unloading
 local function onExtensionLoaded()
-	if not settings.getValue("trafficSimpleVehicles") then
-		originalSimplifiedTrafficValue = false
-		settings.setValue("trafficSimpleVehicles", true)
-	end
-
+	getUserTrafficSettings()
+	setTrafficSettings(freeRoamMPTrafficSettings)
+	getUserGameplaySettings()
+	setGameplaySettings(freeRoamMPGameplaySettings)
 	AddEventHandler("rxUpdateDisplay", rxUpdateDisplay)
 	AddEventHandler("rxUpdateWinnerLight", rxUpdateWinnerLight)
 	AddEventHandler("rxClearAll", rxClearAll)
@@ -1180,31 +1179,25 @@ local function onExtensionLoaded()
 end
 
 local function onExtensionUnloaded()
-	if originalSimplifiedTrafficValue == false then
-		settings.setValue("trafficSimpleVehicles", originalSimplifiedTrafficValue)
-	end
+	setTrafficSettings(userTrafficSettings)
+	setGameplaySettings(userGameplaySettings)
 	log('W', 'freeRoamMP', 'freeRoamMP UNLOADED!')
 end
 
-M.onGameStateUpdate = onGameStateUpdate
-
-M.onBeforeDragUnloadAllExtensions = onBeforeDragUnloadAllExtensions
-
-M.onUpdate = onUpdate
-M.onWorldReadyState = onWorldReadyState
-
-M.onAnyMissionChanged = onAnyMissionChanged
-M.onMissionStartWithFade = onMissionStartWithFade
-
-M.onSpeedTrapTriggered = onSpeedTrapTriggered
-M.onRedLightCamTriggered = onRedLightCamTriggered
-
-M.onFreeroamChallengeTerminated = onFreeroamChallengeTerminated
-M.onFreeroamChallengeCompleted = onFreeroamChallengeCompleted
-
+--Access
 M.onVehicleActiveChanged = onVehicleActiveChanged
 M.onVehicleSpawned = onVehicleSpawned
 M.onVehicleReady = onVehicleReady
+M.onVehicleSwitched = onVehicleSwitched
+
+M.onSpeedTrapTriggered = onSpeedTrapTriggered
+M.onRedLightCamTriggered = onRedLightCamTriggered
+M.onAnyMissionChanged = onAnyMissionChanged
+M.onMissionStartWithFade = onMissionStartWithFade
+M.onGameStateUpdate = onGameStateUpdate
+
+M.onWorldReadyState = onWorldReadyState
+M.onUpdate = onUpdate
 
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded

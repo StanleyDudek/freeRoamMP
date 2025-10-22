@@ -2,25 +2,29 @@
 A BeamMP `Client mod <=> Server plugin` pair enabling a stock freeroam gamemode on your BeamMP server!
 
 ## Mission and scenario points of interests including
-- delivery
-- police
-- stunts
-- crawls
-- derby
-- rally
-- time trials
-- garageToGarage
-- fuel stations
+- a run for life
 - bus routes
-- drift
-- drift zones
-- ai street races
-- ai drag races
-- even more appear to be unlockable with progression (base game tracking system)
+- collection
+- crash test
+- crawl
+- delivery
+- derby
+- drag
+- drift and drift zones
+- evade
+- fuel stations
+- garage to garage
+- offroad
+- police
+- rally
+- street races
+- stunts
+- time trials
+- and even more appear to be unlockable with progression (base game tracking system)
 
 ## Under the hood
 - traffic count balancing **(new!)**
-- MP UI app injection into missions and scenarios
+- MP UI app injection into missions and scenarios **(improved!)**
 - traffic light sync
 - red light / speed trap broadcasts
 - syncing prefab loading and collision across clients

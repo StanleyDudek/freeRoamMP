@@ -92,40 +92,40 @@ local missionLayouts = {
 	dragMission = "dragMission"
 }
 
-local multiplayerchat = {
-	appName = "multiplayerchat",
-	placement = {
-		width = "550px",
-		bottom = "0px",
-		height = "170px",
-		left = "180px"
-	}
-}
-
-local multiplayersession = {
-	appName = "multiplayersession",
-	placement = {
-		bottom = "",
-		height = "40px",
-		left = 0,
-		margin = "auto",
-		position = "absolute",
-		right = 0,
-		top = "0px",
-		width = "700px"
-	}
-}
-
-local multiplayerplayerlist = {
-	appName = "multiplayerplayerlist",
-	placement = {
-		bottom = "",
-		height = "560px",
-		left = "",
-		position = "absolute",
-		right = "0px",
-		top = "30px",
-		width = "300px"
+local multiplayerApps = {
+	multiplayerchat = {
+		appName = "multiplayerchat",
+		placement = {
+			width = "550px",
+			bottom = "0px",
+			height = "170px",
+			left = "180px"
+		}
+	},
+	multiplayersession = {
+		appName = "multiplayersession",
+		placement = {
+			bottom = "",
+			height = "40px",
+			left = 0,
+			margin = "auto",
+			position = "absolute",
+			right = 0,
+			top = "0px",
+			width = "700px"
+		}
+	},
+	multiplayerplayerlist = {
+		appName = "multiplayerplayerlist",
+		placement = {
+			bottom = "",
+			height = "560px",
+			left = "",
+			position = "absolute",
+			right = "0px",
+			top = "30px",
+			width = "300px"
+		}
 	}
 }
 
@@ -792,13 +792,13 @@ local function onGameStateUpdate(state)
 		if currentMpLayout then
 			for _, app in pairs(currentMpLayout.apps) do
 				if app.appName == "multiplayerchat" then
-					multiplayerchat = app
+					multiplayerApps.multiplayerchat = app
 				end
 				if app.appName == "multiplayersession" then
-					multiplayersession = app
+					multiplayerApps.multiplayersession = app
 				end
 				if app.appName == "multiplayerplayerlist" then
-					multiplayerplayerlist = app
+					multiplayerApps.multiplayerplayerlist = app
 				end
 			end
 			local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
@@ -810,7 +810,7 @@ local function onGameStateUpdate(state)
 					end
 				end
 				if not found then
-					table.insert(currentLayout.apps, multiplayerchat)
+					table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
 					stateToUpdate = true
 				end
 				for _, app in pairs(currentLayout.apps) do
@@ -819,7 +819,7 @@ local function onGameStateUpdate(state)
 					end
 				end
 				if not found then
-					table.insert(currentLayout.apps, multiplayersession)
+					table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
 					stateToUpdate = true
 				end
 				for _, app in pairs(currentLayout.apps) do
@@ -828,7 +828,7 @@ local function onGameStateUpdate(state)
 					end
 				end
 				if not found then
-					table.insert(currentLayout.apps, multiplayerplayerlist)
+					table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
 					stateToUpdate = true
 				end
 			end
@@ -841,13 +841,13 @@ local function onGameStateUpdate(state)
 		if currentMpLayout then
 			for _, app in pairs(currentMpLayout.apps) do
 				if app.appName == "multiplayerchat" then
-					multiplayerchat = app
+					multiplayerApps.multiplayerchat = app
 				end
 				if app.appName == "multiplayersession" then
-					multiplayersession = app
+					multiplayerApps.multiplayersession = app
 				end
 				if app.appName == "multiplayerplayerlist" then
-					multiplayerplayerlist = app
+					multiplayerApps.multiplayerplayerlist = app
 				end
 			end
 			local missionLayout = jsonReadFile(missionAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
@@ -859,7 +859,7 @@ local function onGameStateUpdate(state)
 					end
 				end
 				if not found then
-					table.insert(currentLayout.apps, multiplayerchat)
+					table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
 					stateToUpdate = true
 				end
 				for _, app in pairs(currentLayout.apps) do
@@ -868,7 +868,7 @@ local function onGameStateUpdate(state)
 					end
 				end
 				if not found then
-					table.insert(currentLayout.apps, multiplayersession)
+					table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
 					stateToUpdate = true
 				end
 				for _, app in pairs(currentLayout.apps) do
@@ -877,7 +877,7 @@ local function onGameStateUpdate(state)
 					end
 				end
 				if not found then
-					table.insert(currentLayout.apps, multiplayerplayerlist)
+					table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
 					stateToUpdate = true
 				end
 			end

@@ -42,54 +42,52 @@ local freeRoamMPGameplaySettings = {
 local stateToUpdate
 
 local defaultLayouts = {
-	freeroam = "freeroam",
-	garage = "garage",
-	garage_v2 = "garage_v2",
-	menu = "menu",
-	multiseatscenario = "multiseatscenario",
-	noncompeteScenario = "noncompeteScenario",
-	offroadScenario = "offroadScenario",
-	proceduralScenario = "proceduralScenario",
-	quickraceScenario = "quickraceScenario",
-	radial = "radial",
-	scenario = "scenario",
-	scenario_cinematic_start = "scenario_cinematic_start",
-	singleCheckpointScenario = "singleCheckpointScenario",
-	tasklist = "tasklist",
-	tasklistTall = "tasklistTall",
-	unicycle = "unicycle",
-	busRouteScenario = "busRouteScenario",
-	busStuntMinSpeed = "busStuntMinSpeed",
-	career = "career",
-	careerBigMap = "careerBigMap",
-	careerMission = "careerMission",
-	careerMissionEnd = "careerMissionEnd",
-	careerPause = "careerPause",
-	careerRefuel = "careerRefuel",
-	collectionEvent = "collectionEvent",
-	crawl = "crawl",
-	damageScenario = "damageScenario",
-	dderbyScenario = "dderbyScenario",
-	discover = "discover",
-	driftScenario = "driftScenario",
-	exploration = "exploration",
-	externalUI = "externalUI"
+	busRouteScenario = { filename = "busRouteScenario" },
+	career = { filename = "career" },
+	careerBigMap = { filename = "careerBigMap" },
+	careerMission = { filename = "careerMission" },
+	careerMissionEnd = { filename = "careerMissionEnd" },
+	careerPause = { filename = "careerPause" },
+	careerRefuel = { filename = "careerRefuel" },
+	collectionEvent = { filename = "collectionEvent" },
+	crawl = { filename = "crawl" },
+	damageScenario = { filename = "damageScenario" },
+	dderbyScenario = { filename = "dderbyScenario" },
+	discover = { filename = "discover" },
+	driftScenario = { filename = "driftScenario" },
+	exploration = { filename = "exploration" },
+	externalui = { filename = "externalUI" },
+	freeroam = { filename = "freeroam" },
+	garage = { filename = "garage" },
+	menu = { filename = "menu" },
+	multiseatscenario = { filename = "multiseatscenario" },
+	noncompeteScenario = { filename = "noncompeteScenario" },
+	offroadScenario = { filename = "offroadScenario" },
+	proceduralScenario = { filename = "proceduralScenario" },
+	quickraceScenario = { filename = "quickraceScenario" },
+	radial = { filename = "radial" },
+	scenario = { filename = "scenario" },
+	scenario_cinematic_start = { filename = "scenario_cinematic_start" },
+	singleCheckpointScenario = { filename = "singleCheckpointScenario" },
+	tasklist = { filename = "tasklist" },
+	tasklistTall = { filename = "tasklistTall" },
+	unicycle = { filename = "unicycle" }
 }
 
 local missionLayouts = {
-	driftMission = "driftMission",
-	driftNavigationMission = "driftNavigationMission",
-	evadeMission = "evadeMission",
-	garageToGarage = "garageToGarage",
-	rallyModeRecce = "rallyModeRecce",
-	rallyModeStage = "rallyModeStage",
-	scenarioMission = "scenarioMission",
-	timeTrialMission = "timeTrialMission",
-	aRunForLife = "aRunForLife",
-	basicMission = "basicMission",
-	crashTestMission = "crashTestMission",
-	crawlMission = "crawlMission",
-	dragMission = "dragMission"
+	driftMission = { filename = "driftMission" },
+	driftNavigationMission = { filename = "driftNavigationMission" },
+	evadeMission = { filename = "evadeMission" },
+	garageToGarageMission = { filename = "garageToGarage" },
+	rallyModeRecce = { filename = "rallyModeRecce" },
+	rallyModeStage = { filename = "rallyModeStage" },
+	scenarioMission = { filename = "scenarioMission" },
+	timeTrialMission = { filename = "timeTrialMission" },
+	aRunForLifeMission = { filename = "aRunForLife" },
+	basicMissionLayout = { filename = "basicMission" },
+	crashTestMission = { filename = "crashTestMission" },
+	crawlMission = { filename = "crawlMission" },
+	dragMission = { filename = "dragMission" }
 }
 
 local multiplayerApps = {
@@ -784,108 +782,98 @@ local function onMissionStartWithFade(mission, userSettings)
 end
 
 --State and UI Apps
-local function onGameStateUpdate(state)
+local function checkUIApps(state)
 	local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
 	local currentMpLayout = deepcopy(originalMpLayout)
-	if defaultLayouts[state.appLayout] then
-		local found
-		if currentMpLayout then
-			for _, app in pairs(currentMpLayout.apps) do
-				if app.appName == "multiplayerchat" then
-					multiplayerApps.multiplayerchat = app
-				end
-				if app.appName == "multiplayersession" then
-					multiplayerApps.multiplayersession = app
-				end
-				if app.appName == "multiplayerplayerlist" then
-					multiplayerApps.multiplayerplayerlist = app
-				end
+	if currentMpLayout then
+		for _, app in pairs(currentMpLayout.apps) do
+			if app.appName == "multiplayerchat" then
+				multiplayerApps.multiplayerchat = app
 			end
-			local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
-			local currentLayout = deepcopy(defaultLayout)
-			if currentLayout then
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerchat" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayersession" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerplayerlist" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
-					stateToUpdate = true
-				end
+			if app.appName == "multiplayersession" then
+				multiplayerApps.multiplayersession = app
 			end
-			if stateToUpdate then
-				jsonWriteFile(userDefaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
-			end
-		end
-	elseif missionLayouts[state.appLayout] then
-		local found
-		if currentMpLayout then
-			for _, app in pairs(currentMpLayout.apps) do
-				if app.appName == "multiplayerchat" then
-					multiplayerApps.multiplayerchat = app
-				end
-				if app.appName == "multiplayersession" then
-					multiplayerApps.multiplayersession = app
-				end
-				if app.appName == "multiplayerplayerlist" then
-					multiplayerApps.multiplayerplayerlist = app
-				end
-			end
-			local missionLayout = jsonReadFile(missionAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
-			local currentLayout = deepcopy(missionLayout)
-			if currentLayout then
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerchat" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayersession" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerplayerlist" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
-					stateToUpdate = true
-				end
-			end
-			if stateToUpdate then
-				jsonWriteFile(userMissionAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
+			if app.appName == "multiplayerplayerlist" then
+				multiplayerApps.multiplayerplayerlist = app
 			end
 		end
 	end
+	local found
+	if defaultLayouts[state.appLayout] then
+		local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json")
+		local currentLayout = deepcopy(defaultLayout)
+		if currentLayout then
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayersession" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerplayerlist" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
+				stateToUpdate = true
+			end
+		end
+		if stateToUpdate then
+			jsonWriteFile(userDefaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json", currentLayout, 1)
+		end
+	elseif missionLayouts[state.appLayout] then
+		local missionLayout = jsonReadFile(missionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json")
+		local currentLayout = deepcopy(missionLayout)
+		if currentLayout then
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayersession" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerplayerlist" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
+				stateToUpdate = true
+			end
+		end
+		if stateToUpdate then
+			jsonWriteFile(userMissionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json", currentLayout, 1)
+		end
+	end
+end
+
+local function onGameStateUpdate(state)
+	checkUIApps(state)
 end
 
 --Initial Syncs and Updates

@@ -42,90 +42,88 @@ local freeRoamMPGameplaySettings = {
 local stateToUpdate
 
 local defaultLayouts = {
-	freeroam = "freeroam",
-	garage = "garage",
-	garage_v2 = "garage_v2",
-	menu = "menu",
-	multiseatscenario = "multiseatscenario",
-	noncompeteScenario = "noncompeteScenario",
-	offroadScenario = "offroadScenario",
-	proceduralScenario = "proceduralScenario",
-	quickraceScenario = "quickraceScenario",
-	radial = "radial",
-	scenario = "scenario",
-	scenario_cinematic_start = "scenario_cinematic_start",
-	singleCheckpointScenario = "singleCheckpointScenario",
-	tasklist = "tasklist",
-	tasklistTall = "tasklistTall",
-	unicycle = "unicycle",
-	busRouteScenario = "busRouteScenario",
-	busStuntMinSpeed = "busStuntMinSpeed",
-	career = "career",
-	careerBigMap = "careerBigMap",
-	careerMission = "careerMission",
-	careerMissionEnd = "careerMissionEnd",
-	careerPause = "careerPause",
-	careerRefuel = "careerRefuel",
-	collectionEvent = "collectionEvent",
-	crawl = "crawl",
-	damageScenario = "damageScenario",
-	dderbyScenario = "dderbyScenario",
-	discover = "discover",
-	driftScenario = "driftScenario",
-	exploration = "exploration",
-	externalUI = "externalUI"
+	busRouteScenario = { filename = "busRouteScenario" },
+	career = { filename = "career" },
+	careerBigMap = { filename = "careerBigMap" },
+	careerMission = { filename = "careerMission" },
+	careerMissionEnd = { filename = "careerMissionEnd" },
+	careerPause = { filename = "careerPause" },
+	careerRefuel = { filename = "careerRefuel" },
+	collectionEvent = { filename = "collectionEvent" },
+	crawl = { filename = "crawl" },
+	damageScenario = { filename = "damageScenario" },
+	dderbyScenario = { filename = "dderbyScenario" },
+	discover = { filename = "discover" },
+	driftScenario = { filename = "driftScenario" },
+	exploration = { filename = "exploration" },
+	externalui = { filename = "externalUI" },
+	freeroam = { filename = "freeroam" },
+	garage = { filename = "garage" },
+	menu = { filename = "menu" },
+	multiseatscenario = { filename = "multiseatscenario" },
+	noncompeteScenario = { filename = "noncompeteScenario" },
+	offroadScenario = { filename = "offroadScenario" },
+	proceduralScenario = { filename = "proceduralScenario" },
+	quickraceScenario = { filename = "quickraceScenario" },
+	radial = { filename = "radial" },
+	scenario = { filename = "scenario" },
+	scenario_cinematic_start = { filename = "scenario_cinematic_start" },
+	singleCheckpointScenario = { filename = "singleCheckpointScenario" },
+	tasklist = { filename = "tasklist" },
+	tasklistTall = { filename = "tasklistTall" },
+	unicycle = { filename = "unicycle" }
 }
 
 local missionLayouts = {
-	driftMission = "driftMission",
-	driftNavigationMission = "driftNavigationMission",
-	evadeMission = "evadeMission",
-	garageToGarage = "garageToGarage",
-	rallyModeRecce = "rallyModeRecce",
-	rallyModeStage = "rallyModeStage",
-	scenarioMission = "scenarioMission",
-	timeTrialMission = "timeTrialMission",
-	aRunForLife = "aRunForLife",
-	basicMission = "basicMission",
-	crashTestMission = "crashTestMission",
-	crawlMission = "crawlMission",
-	dragMission = "dragMission"
+	driftMission = { filename = "driftMission" },
+	driftNavigationMission = { filename = "driftNavigationMission" },
+	evadeMission = { filename = "evadeMission" },
+	garageToGarageMission = { filename = "garageToGarage" },
+	rallyModeRecce = { filename = "rallyModeRecce" },
+	rallyModeStage = { filename = "rallyModeStage" },
+	scenarioMission = { filename = "scenarioMission" },
+	timeTrialMission = { filename = "timeTrialMission" },
+	aRunForLifeMission = { filename = "aRunForLife" },
+	basicMissionLayout = { filename = "basicMission" },
+	crashTestMission = { filename = "crashTestMission" },
+	crawlMission = { filename = "crawlMission" },
+	dragMission = { filename = "dragMission" }
 }
 
-local multiplayerchat = {
-	appName = "multiplayerchat",
-	placement = {
-		width = "550px",
-		bottom = "0px",
-		height = "170px",
-		left = "180px"
-	}
-}
-
-local multiplayersession = {
-	appName = "multiplayersession",
-	placement = {
-		bottom = "",
-		height = "40px",
-		left = 0,
-		margin = "auto",
-		position = "absolute",
-		right = 0,
-		top = "0px",
-		width = "700px"
-	}
-}
-
-local multiplayerplayerlist = {
-	appName = "multiplayerplayerlist",
-	placement = {
-		bottom = "",
-		height = "560px",
-		left = "",
-		position = "absolute",
-		right = "0px",
-		top = "30px",
-		width = "300px"
+local multiplayerApps = {
+	multiplayerchat = {
+		appName = "multiplayerchat",
+		placement = {
+			width = "550px",
+			bottom = "0px",
+			height = "170px",
+			left = "180px"
+		}
+	},
+	multiplayersession = {
+		appName = "multiplayersession",
+		placement = {
+			bottom = "",
+			height = "40px",
+			left = 0,
+			margin = "auto",
+			position = "absolute",
+			right = 0,
+			top = "0px",
+			width = "700px"
+		}
+	},
+	multiplayerplayerlist = {
+		appName = "multiplayerplayerlist",
+		placement = {
+			bottom = "",
+			height = "560px",
+			left = "",
+			position = "absolute",
+			right = "0px",
+			top = "30px",
+			width = "300px"
+		}
 	}
 }
 
@@ -536,9 +534,11 @@ end
 
 local function onVehicleSwitched(oldGameVehicleID, newGameVehicleID)
 	local veh = be:getObjectByID(newGameVehicleID)
-	if hiddens[veh.JBeam] then
-		if not MPVehicleGE.isOwn(newGameVehicleID) then
-			be:enterNextVehicle(0, 1)
+	if veh then
+		if hiddens[veh.JBeam] then
+			if not MPVehicleGE.isOwn(newGameVehicleID) then
+				be:enterNextVehicle(0, 1)
+			end
 		end
 	end
 end
@@ -609,376 +609,154 @@ local function rxTrafficSignalTimer(data)
 	settings.setValue("trafficAmount", count)
 end
 
-local function rxPrefabSync(data)
-	if data ~= "null" or data ~= nil then
-		local prefabData = jsonDecode(data)
-		local userSettings = prefabData.pSettings
-		local arrive
-		local closedGates
-		local deco
-		local forward
-		local main
-		local obstacles
-		local obstacles2
-		local obstaclesfromFile
-		local openGates
-		local parkingLotClutter
-		local prefab
-		local ramp
-		local reverse
-		local road
-		local targets
-		local vehicles
-		if prefabData.pLoad == true then
-			if prefabData.pPath then
-				arrive = prefabData.pPath .. '/arrive.prefab.json'
-				closedGates = prefabData.pPath .. '/closedGates.prefab.json'
-				deco = prefabData.pPath .. '/deco.prefab.json'
-				forward = prefabData.pPath .. '/forwardPrefab.prefab.json'
-				main = prefabData.pPath .. '/mainPrefab.prefab.json'
-				obstacles = prefabData.pPath .. '/obstacles.prefab.json'
-				obstacles2 = prefabData.pPath .. '/obstacles2.prefab.json'
-				obstaclesfromFile = prefabData.pPath .. '/obstacles-fromFile.prefab.json'
-				openGates = prefabData.pPath .. '/openGates.prefab.json'
-				parkingLotClutter = prefabData.pPath .. '/parkingLotClutter.prefab.json'
-				prefab = prefabData.pPath .. '/prefab.prefab.json'
-				ramp = prefabData.pPath .. '/ramp.prefab.json'
-				reverse = prefabData.pPath .. '/reversePrefab.prefab.json'
-				road = prefabData.pPath .. '/road.prefab.json'
-				targets = prefabData.pPath .. '/targets.prefab.json'
-				vehicles = prefabData.pPath .. '/vehicles.prefab.json'
-			end
-			if not FS:fileExists(arrive) then
-				arrive = prefabData.pPath .. '/arrive.prefab'
-				if FS:fileExists(arrive) then
-					prefabsTable[prefabData.pName .. "arrive"] = { path = arrive, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated arrive prefab found!')
-				else
-					arrive = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "arrive"] = { path = arrive, outdated = false }
-				log('W', 'freeRoamMP', 'Arrive prefab found!')
-			end
-			if not FS:fileExists(closedGates) then
-				closedGates = prefabData.pPath .. '/closedGates.prefab'
-				if FS:fileExists(closedGates) then
-					prefabsTable[prefabData.pName .. "closedGates"] = { path = closedGates, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated closedGates prefab found!')
-				else
-					closedGates = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "closedGates"] = { path = closedGates, outdated = false }
-				log('W', 'freeRoamMP', 'closedGates prefab found!')
-			end
-			if not FS:fileExists(deco) then
-				deco = prefabData.pPath .. '/deco.prefab'
-				if FS:fileExists(deco) then
-					prefabsTable[prefabData.pName .. "deco"] = { path = deco, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated deco prefab found!')
-				else
-					deco = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "deco"] = { path = deco, outdated = false }
-				log('W', 'freeRoamMP', 'Deco prefab found!')
-			end
-			if not FS:fileExists(forward) then
-				forward = prefabData.pPath .. '/forwardPrefab.prefab'
-				if FS:fileExists(forward) and not userSettings.reverse then
-					prefabsTable[prefabData.pName .. "forward"] = { path = forward, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated forward prefab found!')
-				else
-					forward = nil
-				end
-			elseif not userSettings.reverse then
-				prefabsTable[prefabData.pName .. "forward"] = { path = forward, outdated = false }
-				log('W', 'freeRoamMP', 'Forward prefab found!')
-			end
-			if not FS:fileExists(main) then
-				main = prefabData.pPath .. '/mainPrefab.prefab'
-				if FS:fileExists(main) then
-					prefabsTable[prefabData.pName .. "main"] = { path = main, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated main prefab found!')
-				else
-					main = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "main"] = { path = main, outdated = false }
-				log('W', 'freeRoamMP', 'Main prefab found!')
-			end
-			if not FS:fileExists(obstacles) then
-				obstacles = prefabData.pPath .. '/obstacles.prefab'
-				if FS:fileExists(obstacles) then
-					prefabsTable[prefabData.pName .. "obstacles"] = { path = obstacles, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated obstacles prefab found!')
-				else
-					obstacles = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "obstacles"] = { path = obstacles, outdated = false }
-				log('W', 'freeRoamMP', 'Obstacles prefab found!')
-			end
-			if not FS:fileExists(obstacles2) then
-				obstacles2 = prefabData.pPath .. '/obstacles2.prefab'
-				if FS:fileExists(obstacles2) then
-					prefabsTable[prefabData.pName .. "obstacles2"] = { path = obstacles2, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated obstacles2 prefab found!')
-				else
-					obstacles2 = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "obstacles2"] = { path = obstacles2, outdated = false }
-				log('W', 'freeRoamMP', 'Obstacles2 prefab found!')
-			end
-			if not FS:fileExists(obstaclesfromFile) then
-				obstaclesfromFile = prefabData.pPath .. '/obstaclesfromFile.prefab'
-				if FS:fileExists(obstaclesfromFile) then
-					prefabsTable[prefabData.pName .. "obstaclesfromFile"] = { path = obstaclesfromFile, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated obstaclesfromFile prefab found!')
-				else
-					obstaclesfromFile = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "obstacles2"] = { path = obstacles2, outdated = false }
-				log('W', 'freeRoamMP', 'Obstacles2 prefab found!')
-			end
-			if not FS:fileExists(openGates) then
-				openGates = prefabData.pPath .. '/openGates.prefab'
-				if FS:fileExists(openGates) then
-					prefabsTable[prefabData.pName .. "openGates"] = { path = openGates, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated openGates prefab found!')
-				else
-					openGates = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "openGates"] = { path = openGates, outdated = false }
-				log('W', 'freeRoamMP', 'openGates prefab found!')
-			end
-			if not FS:fileExists(parkingLotClutter) then
-				parkingLotClutter = prefabData.pPath .. '/parkingLotClutter.prefab'
-				if FS:fileExists(parkingLotClutter) then
-					prefabsTable[prefabData.pName .. "parkingLotClutter"] = { path = parkingLotClutter, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated parkingLotClutter prefab found!')
-				else
-					parkingLotClutter = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "parkingLotClutter"] = { path = parkingLotClutter, outdated = false }
-				log('W', 'freeRoamMP', 'parkingLotClutter prefab found!')
-			end
-			if not FS:fileExists(prefab) then
-				prefab = prefabData.pPath .. '/prefab.prefab'
-				if FS:fileExists(prefab) then
-					prefabsTable[prefabData.pName .. "prefab"] = { path = prefab, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated prefab prefab found!')
-				else
-					prefab = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "prefab"] = { path = prefab, outdated = false }
-				log('W', 'freeRoamMP', 'Prefab prefab found!')
-			end
-			if not FS:fileExists(ramp) then
-				ramp = prefabData.pPath .. '/ramp.prefab'
-				if FS:fileExists(ramp) then
-					prefabsTable[prefabData.pName .. "ramp"] = { path = ramp, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated ramp prefab found!')
-				else
-					ramp = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "ramp"] = { path = ramp, outdated = false }
-				log('W', 'freeRoamMP', 'Ramp prefab found!')
-			end
-			if not FS:fileExists(reverse) then
-				reverse = prefabData.pPath .. '/reversePrefab.prefab'
-				if FS:fileExists(reverse) and userSettings.reverse then
-					prefabsTable[prefabData.pName .. "reverse"] = { path = reverse, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated reverse prefab found!')
-				else
-					reverse = nil
-				end
-			elseif userSettings.reverse then
-				prefabsTable[prefabData.pName .. "reverse"] = { path = reverse, outdated = false }
-				log('W', 'freeRoamMP', 'Reverse prefab found!')
-			end
-			if not FS:fileExists(road) then
-				road = prefabData.pPath .. '/road.prefab'
-				if FS:fileExists(road) then
-					prefabsTable[prefabData.pName .. "road"] = { path = road, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated road prefab found!')
-				else
-					road = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "road"] = { path = road, outdated = false }
-				log('W', 'freeRoamMP', 'Road prefab found!')
-			end
-			if not FS:fileExists(targets) then
-				targets = prefabData.pPath .. '/targets.prefab'
-				if FS:fileExists(targets) then
-					prefabsTable[prefabData.pName .. "targets"] = { path = targets, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated targets prefab found!')
-				else
-					targets = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "targets"] = { path = targets, outdated = false }
-				log('W', 'freeRoamMP', 'targets prefab found!')
-			end
-			if not FS:fileExists(vehicles) then
-				vehicles = prefabData.pPath .. '/vehicles.prefab'
-				if FS:fileExists(vehicles) then
-					prefabsTable[prefabData.pName .. "vehicles"] = { path = vehicles, outdated = true }
-					log('W', 'freeRoamMP', 'Outdated vehicles prefab found!')
-				else
-					vehicles = nil
-				end
-			else
-				prefabsTable[prefabData.pName .. "vehicles"] = { path = vehicles, outdated = false }
-				log('W', 'freeRoamMP', 'Vehicles prefab found!')
-			end
-		elseif prefabData.pLoad == false then
-			removePrefab(prefabData.pName)
-			if scenetree.findObject(prefabData.pName .. "arrive") then
-				removePrefab(prefabData.pName .. "arrive")
-			end
-			if scenetree.findObject(prefabData.pName .. "closedGates") then
-				removePrefab(prefabData.pName .. "closedGates")
-			end
-			if scenetree.findObject(prefabData.pName .. "deco") then
-				removePrefab(prefabData.pName .. "deco")
-			end
-			if scenetree.findObject(prefabData.pName .. "forward") then
-				removePrefab(prefabData.pName .. "forward")
-			end
-			if scenetree.findObject(prefabData.pName .. "main") then
-				removePrefab(prefabData.pName .. "main")
-			end
-			if scenetree.findObject(prefabData.pName .. "obstacles") then
-				removePrefab(prefabData.pName .. "obstacles")
-			end
-			if scenetree.findObject(prefabData.pName .. "obstacles2") then
-				removePrefab(prefabData.pName .. "obstacles2")
-			end
-			if scenetree.findObject(prefabData.pName .. "obstaclesfromFile") then
-				removePrefab(prefabData.pName .. "obstaclesfromFile")
-			end
-			if scenetree.findObject(prefabData.pName .. "openGates") then
-				removePrefab(prefabData.pName .. "openGates")
-			end
-			if scenetree.findObject(prefabData.pName .. "parkingLotClutter") then
-				removePrefab(prefabData.pName .. "parkingLotClutter")
-			end
-			if scenetree.findObject(prefabData.pName .. "prefab") then
-				removePrefab(prefabData.pName .. "prefab")
-			end
-			if scenetree.findObject(prefabData.pName .. "ramp") then
-				removePrefab(prefabData.pName .. "ramp")
-			end
-			if scenetree.findObject(prefabData.pName .. "reverse") then
-				removePrefab(prefabData.pName .. "reverse")
-			end
-			if scenetree.findObject(prefabData.pName .. "road") then
-				removePrefab(prefabData.pName .. "road")
-			end
-			if scenetree.findObject(prefabData.pName .. "targets") then
-				removePrefab(prefabData.pName .. "targets")
-			end
-			if scenetree.findObject(prefabData.pName .. "vehicles") then
-				removePrefab(prefabData.pName .. "vehicles")
-			end
-			be:reloadCollision()
-		end
-	end
-end
-
 --Prefabs
-local function handlePrefabsA(path, name)
-	local line_count = 0
-	local count = io.open(path, "r")
-	if count == nil then
-		return
-	end
-	for line in count:lines() do
-		line_count = line_count + 1
-	end
-	count:close()
-	local file = io.open(path, "r")
-	if file == nil then
-		return
-	end
-	local originalContent = file:read("*all")
-	file:close()
-	local tempStringB = ""
-	local sepA = 1
-	local sepB = 1
-	local sepC = 1
-	for i = 1, line_count do
-		sepB = originalContent:find("%]}\n", sepA)
-		if not sepB then
-			sepC = originalContent:find("}\n", sepA)
-			if sepC then
-				local tempStringA = originalContent:sub(sepA, sepC)
-				sepA = originalContent:find("{", sepC)
-				local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
-				if not matchA then
-					tempStringB = tempStringB .. tempStringA .. "\n"
-				end
-			end
-		else
-			local tempStringA = originalContent:sub(sepA, sepB + 1)
-			sepA = originalContent:find("{", sepB)
-			local matchA = string.find(tempStringA, "BeamNGVehicle", 1)
-			if not matchA then
-				tempStringB = tempStringB .. tempStringA .. "\n"
-			end
-		end
-		if not sepA then
-			break
-		end
-	end
-	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab.json"
-	local tempFile = io.open(tempPath, "w+")
-	if tempFile then
-		tempFile:write(tempStringB)
-		tempFile:close()
-	end
-	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
+local prefabNames = {
+	"arrive",
+	"closedGates",
+	"deco",
+	"forwardPrefab",
+	"mainPrefab",
+	"obstacles",
+	"obstacles2",
+	"obstacles-fromFile",
+	"openGates",
+	"parkingLotClutter",
+	"prefab",
+	"ramp",
+	"reversePrefab",
+	"road",
+	"targets",
+	"vehicles"
+}
+
+local function addPrefabEntry(name, path, outdated, message)
+	prefabsTable[name] = {
+		path = path,
+		outdated = outdated
+	}
+	log('W', 'freeRoamMP', message)
 end
 
-local function handlePrefabsB(path, name)
-	local f = io.open(path, "r")
-	if f == nil then
+local function checkPrefab(prefabData, baseName, userSettings)
+	local fullJson = string.format("%s/%s.prefab.json", prefabData.pPath, baseName)
+	local fullLegacy = string.format("%s/%s.prefab", prefabData.pPath, baseName)
+	local prefabKey = prefabData.pName .. baseName:gsub("Prefab", ""):gsub("%-", "")
+	local outdated, exists = false, FS:fileExists(fullJson)
+	if not exists then
+		outdated = true
+		exists = FS:fileExists(fullLegacy)
+		if not exists then
+			return
+		end
+	end
+	if baseName == "forwardPrefab" and userSettings.reverse then
 		return
 	end
-	local originalContent = f:read("*all")
+	if baseName == "reversePrefab" and not userSettings.reverse then
+		return
+	end
+	addPrefabEntry(prefabKey, exists and (outdated and fullLegacy or fullJson), outdated, string.format("%s prefab found!%s", baseName:gsub("Prefab", ""), outdated and " (outdated)" or ""))
+end
+
+local function removeAllPrefabs(pName)
+	for _, base in pairs(prefabNames) do
+		local key = pName .. base:gsub("Prefab", ""):gsub("%-", "")
+		if scenetree.findObject(key) then
+			removePrefab(key)
+		end
+	end
+	be:reloadCollision()
+end
+
+local function rxPrefabSync(data)
+	if not data or data == "null" then
+		return
+	end
+	local prefabData = jsonDecode(data)
+	local userSettings = prefabData.pSettings
+	if prefabData.pLoad then
+		for _, base in ipairs(prefabNames) do
+			checkPrefab(prefabData, base, userSettings)
+		end
+	else
+		removePrefab(prefabData.pName)
+		removeAllPrefabs(prefabData.pName)
+	end
+end
+
+local function readPrefab(path)
+	local f = io.open(path, "r")
+	if not f then
+		return nil
+	end
+	local content = f:read("*all")
 	f:close()
-	local tempStringB = ""
-	local index = 1
-	for i = index, #originalContent do
-		local startBeam = originalContent:find("   new BeamNGVehicle%(", index)
-		if not startBeam then
-			tempStringB = tempStringB .. originalContent:sub(index)
+	return content
+end
+
+local function writePrefab(path, content)
+	local f = io.open(path, "w+")
+	if not f then
+		return
+	end
+	f:write(content)
+	f:close()
+end
+
+local function cleanPrefab(content)
+	local result = ""
+	local inSep = 1
+	for _ = 1, #content do
+		local outSep = content:find("}\n", inSep)
+		if not outSep then
 			break
 		end
-		tempStringB = tempStringB .. originalContent:sub(index, startBeam - 1)
-		local endBeam = originalContent:find("};", startBeam)
-		if endBeam then
-			index = endBeam + 2
-		else
+		local block = content:sub(inSep, outSep)
+		inSep = content:find("{", outSep)
+		if not block:find("BeamNGVehicle", 1) then
+			result = result .. block .. "\n"
+		end
+		if not inSep then
 			break
 		end
 	end
-	local tempPath = "settings/BeamMP/tempPrefab" .. name ..".prefab"
-	local tempFile = io.open(tempPath, "w+")
-	if tempFile then
-		tempFile:write(tempStringB)
-		tempFile:close()
+	return result
+end
+
+local function cleanPrefabOutdated(content)
+	local result = ""
+	local inSep = 1
+	for _ = 1, #content do
+		local start = content:find("   new BeamNGVehicle%(", inSep)
+		if not start then
+			result = result .. content:sub(inSep)
+			break
+		end
+		result = result .. content:sub(inSep, start - 1)
+		local outSep = content:find("};", start)
+		if not outSep then
+			break
+		end
+		inSep = outSep + 2
+		if inSep > #content then
+			break
+		end
 	end
-	spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
+	return result
+end
+
+local function processPrefab(path, name, outdated)
+	local content = readPrefab(path)
+	if not content then
+		return
+	end
+	local cleanedPrefab = not outdated and cleanPrefab(content) or cleanPrefabOutdated(content)
+	if cleanedPrefab then
+		local ext = not outdated and ".prefab.json" or ".prefab"
+		local tempPath = "settings/BeamMP/tempPrefab" .. name .. ext
+		writePrefab(tempPath, cleanedPrefab)
+		spawnPrefab(name, tempPath, "0 0 0", "0 0 1", "1 1 1")
+	end
 end
 
 local function onAnyMissionChanged(state, mission)
@@ -1004,108 +782,98 @@ local function onMissionStartWithFade(mission, userSettings)
 end
 
 --State and UI Apps
-local function onGameStateUpdate(state)
+local function checkUIApps(state)
 	local originalMpLayout = jsonReadFile(userDefaultAppLayoutDirectory .. "multiplayer.uilayout.json")
 	local currentMpLayout = deepcopy(originalMpLayout)
-	if defaultLayouts[state.appLayout] then
-		local found
-		if currentMpLayout then
-			for _, app in pairs(currentMpLayout.apps) do
-				if app.appName == "multiplayerchat" then
-					multiplayerchat = app
-				end
-				if app.appName == "multiplayersession" then
-					multiplayersession = app
-				end
-				if app.appName == "multiplayerplayerlist" then
-					multiplayerplayerlist = app
-				end
+	if currentMpLayout then
+		for _, app in pairs(currentMpLayout.apps) do
+			if app.appName == "multiplayerchat" then
+				multiplayerApps.multiplayerchat = app
 			end
-			local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
-			local currentLayout = deepcopy(defaultLayout)
-			if currentLayout then
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerchat" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerchat)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayersession" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayersession)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerplayerlist" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerplayerlist)
-					stateToUpdate = true
-				end
+			if app.appName == "multiplayersession" then
+				multiplayerApps.multiplayersession = app
 			end
-			if stateToUpdate then
-				jsonWriteFile(userDefaultAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
-			end
-		end
-	elseif missionLayouts[state.appLayout] then
-		local found
-		if currentMpLayout then
-			for _, app in pairs(currentMpLayout.apps) do
-				if app.appName == "multiplayerchat" then
-					multiplayerchat = app
-				end
-				if app.appName == "multiplayersession" then
-					multiplayersession = app
-				end
-				if app.appName == "multiplayerplayerlist" then
-					multiplayerplayerlist = app
-				end
-			end
-			local missionLayout = jsonReadFile(missionAppLayoutDirectory .. state.appLayout .. ".uilayout.json")
-			local currentLayout = deepcopy(missionLayout)
-			if currentLayout then
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerchat" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerchat)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayersession" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayersession)
-					stateToUpdate = true
-				end
-				for _, app in pairs(currentLayout.apps) do
-					if app.appName == "multiplayerplayerlist" then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(currentLayout.apps, multiplayerplayerlist)
-					stateToUpdate = true
-				end
-			end
-			if stateToUpdate then
-				jsonWriteFile(userMissionAppLayoutDirectory .. state.appLayout .. ".uilayout.json", currentLayout, 1)
+			if app.appName == "multiplayerplayerlist" then
+				multiplayerApps.multiplayerplayerlist = app
 			end
 		end
 	end
+	local found
+	if defaultLayouts[state.appLayout] then
+		local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json")
+		local currentLayout = deepcopy(defaultLayout)
+		if currentLayout then
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayersession" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerplayerlist" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
+				stateToUpdate = true
+			end
+		end
+		if stateToUpdate then
+			jsonWriteFile(userDefaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json", currentLayout, 1)
+		end
+	elseif missionLayouts[state.appLayout] then
+		local missionLayout = jsonReadFile(missionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json")
+		local currentLayout = deepcopy(missionLayout)
+		if currentLayout then
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerchat" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerchat)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayersession" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayersession)
+				stateToUpdate = true
+			end
+			for _, app in pairs(currentLayout.apps) do
+				if app.appName == "multiplayerplayerlist" then
+					found = true
+				end
+			end
+			if not found then
+				table.insert(currentLayout.apps, multiplayerApps.multiplayerplayerlist)
+				stateToUpdate = true
+			end
+		end
+		if stateToUpdate then
+			jsonWriteFile(userMissionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json", currentLayout, 1)
+		end
+	end
+end
+
+local function onGameStateUpdate(state)
+	checkUIApps(state)
 end
 
 --Initial Syncs and Updates
@@ -1125,17 +893,10 @@ end
 local function onUpdate(dtReal, dtSim, dtRaw)
 	if worldReadyState == 2 then
 		for name, data in pairs(prefabsTable) do
-			if data.outdated == true then
-				handlePrefabsB(data.path, name)
-				prefabsTable[name] = nil
-				be:reloadCollision()
-				break
-			elseif data.outdated == false then
-				handlePrefabsA(data.path, name)
-				prefabsTable[name] = nil
-				be:reloadCollision()
-				break
-			end
+			processPrefab(data.path, name, data.outdated)
+			prefabsTable[name] = nil
+			be:reloadCollision()
+			break
 		end
 		if stateToUpdate then
 			ui_apps.requestUIAppsData()

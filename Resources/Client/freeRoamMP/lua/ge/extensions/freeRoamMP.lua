@@ -800,8 +800,15 @@ local function checkUIApps(state)
 	end
 	local found
 	if defaultLayouts[state.appLayout] then
-		local defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json")
-		local currentLayout = deepcopy(defaultLayout)
+		local customLayout = jsonReadFile(userDefaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json")
+		local defaultLayout
+		local currentLayout
+		if customLayout then
+			currentLayout = deepcopy(customLayout)
+		else
+			defaultLayout = jsonReadFile(defaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json")
+			currentLayout = deepcopy(defaultLayout)
+		end
 		if currentLayout then
 			for _, app in pairs(currentLayout.apps) do
 				if app.appName == "multiplayerchat" then
@@ -835,8 +842,15 @@ local function checkUIApps(state)
 			jsonWriteFile(userDefaultAppLayoutDirectory .. defaultLayouts[state.appLayout].filename .. ".uilayout.json", currentLayout, 1)
 		end
 	elseif missionLayouts[state.appLayout] then
-		local missionLayout = jsonReadFile(missionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json")
-		local currentLayout = deepcopy(missionLayout)
+		local customLayout = jsonReadFile(userMissionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json")
+		local missionLayout
+		local currentLayout
+		if customLayout then
+			currentLayout = deepcopy(customLayout)
+		else
+			missionLayout = jsonReadFile(missionAppLayoutDirectory .. missionLayouts[state.appLayout].filename .. ".uilayout.json")
+			currentLayout = deepcopy(missionLayout)
+		end
 		if currentLayout then
 			for _, app in pairs(currentLayout.apps) do
 				if app.appName == "multiplayerchat" then

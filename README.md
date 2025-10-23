@@ -47,3 +47,5 @@ Install is simple, grab a [release](https://github.com/StanleyDudek/freeRoamMP/r
 <img width="2552" height="1348" alt="image" src="https://github.com/user-attachments/assets/93367c9c-e2bf-452a-bac5-c2467ac27a22" />
 
 ###### Proudly made without AI, ever.
+
+Visit my [Sandbox](https://discord.gg/caU5adg "Dudek's Sandbox")

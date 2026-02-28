@@ -43,6 +43,7 @@ local stateToUpdate
 
 local defaultLayouts = {
 	busRouteScenario = { filename = "busRouteScenario" },
+	busStuntMinSpeed = { filename = "busStuntMinSpeed" },
 	career = { filename = "career" },
 	careerBigMap = { filename = "careerBigMap" },
 	careerMission = { filename = "careerMission" },
@@ -59,7 +60,7 @@ local defaultLayouts = {
 	externalui = { filename = "externalUI" },
 	freeroam = { filename = "freeroam" },
 	garage = { filename = "garage" },
-	menu = { filename = "menu" },
+	garage_v2 = { filename = "garage_v2" },
 	multiseatscenario = { filename = "multiseatscenario" },
 	noncompeteScenario = { filename = "noncompeteScenario" },
 	offroadScenario = { filename = "offroadScenario" },
@@ -75,19 +76,21 @@ local defaultLayouts = {
 }
 
 local missionLayouts = {
-	driftMission = { filename = "driftMission" },
-	driftNavigationMission = { filename = "driftNavigationMission" },
-	evadeMission = { filename = "evadeMission" },
-	garageToGarageMission = { filename = "garageToGarage" },
-	rallyModeRecce = { filename = "rallyModeRecce" },
-	rallyModeStage = { filename = "rallyModeStage" },
-	scenarioMission = { filename = "scenarioMission" },
-	timeTrialMission = { filename = "timeTrialMission" },
 	aRunForLifeMission = { filename = "aRunForLife" },
 	basicMissionLayout = { filename = "basicMission" },
 	crashTestMission = { filename = "crashTestMission" },
 	crawlMission = { filename = "crawlMission" },
-	dragMission = { filename = "dragMission" }
+	dragMission = { filename = "dragMission" },
+	driftMission = { filename = "driftMission" },
+	driftNavigationMission = { filename = "driftNavigationMission" },
+	evadeMission = { filename = "evadeMission" },
+	garageToGarageMission = { filename = "garageToGarage" },
+	rallyModeLoop = { filename = "rallyModeLoop" },
+	rallyModeLoopStage = { filename = "rallyModeLoopStage" },
+	rallyModeRecce = { filename = "rallyModeRecce" },
+	rallyModeStage = { filename = "rallyModeStage" },
+	scenarioMission = { filename = "scenarioMission" },
+	timeTrialMission = { filename = "timeTrialMission" }
 }
 
 local multiplayerApps = {
@@ -496,23 +499,20 @@ local function onVehicleActiveChanged(gameVehicleID, active)
 				TriggerServerEvent("freeRoamVehicleActiveHandler", jsonEncode(data))
 			end
 		else
-			local serverVehicleID = MPVehicleGE.getServerVehicleID(gameVehicleID)
-			if serverVehicleID then
-				TriggerServerEvent("freeRoamVehSyncRequested", "")
-			end
+			TriggerServerEvent("freeRoamVehSyncRequested", "")
 		end
 	end
 end
 
 local function onVehicleSpawned(gameVehicleID)
 	if gameVehicleID then
-		if not MPVehicleGE.isOwn(gameVehicleID) then
-			TriggerServerEvent("freeRoamVehSyncRequested", "")
-		end
 		local veh = be:getObjectByID(gameVehicleID)
 		if veh then
 			veh:setField('renderDistance', '', 6969)
 			veh:queueLuaCommand('freeRoamMP.onVehicleReady()')
+		end
+		if not MPVehicleGE.isOwn(gameVehicleID) then
+			TriggerServerEvent("freeRoamVehSyncRequested", "")
 		end
 	end
 end
@@ -602,7 +602,7 @@ local function rxTrafficSignalTimer(data)
 	core_trafficSignals.setTimer(tonumber(data))
 	local vehicles = MPVehicleGE.getVehicles()
 	local count = 0
-	for serverVehicleID, vehicle in pairs(vehicles) do
+	for _ in pairs(vehicles) do
 		count = count + 1
 	end
 	count = count + freeRoamMPTrafficSettings.trafficExtraAmount
@@ -615,6 +615,8 @@ local prefabNames = {
 	"closedGates",
 	"deco",
 	"forwardPrefab",
+	"logs",
+	"loopPrefab",
 	"mainPrefab",
 	"obstacles",
 	"obstacles2",
@@ -625,6 +627,7 @@ local prefabNames = {
 	"ramp",
 	"reversePrefab",
 	"road",
+	"rockslide",
 	"targets",
 	"vehicles"
 }

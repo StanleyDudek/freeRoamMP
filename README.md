@@ -1,4 +1,4 @@
-# freeRoamMP
+# freeRoamMP - NOT CURRENTLY COMPATIBLE WITH BEAMNG.DRIVE 0.39
 A BeamMP `Client mod <=> Server plugin` pair enabling a stock freeroam gamemode on your BeamMP server!
 
 ## Mission and scenario points of interests including
